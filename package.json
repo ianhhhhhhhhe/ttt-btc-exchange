@@ -1,0 +1,26 @@
+{
+	"name": "trustnote-bot-exchange",
+	"description": "TTT-to-BTC exchange",
+	"author": "trustnote",
+	"version": "0.1.8",
+	"main": "index.js",
+	"keywords": [
+		"exchange",
+		"bitcoin",
+		"trustnote",
+		"chatbot"
+	],
+	"license": "MIT",
+	"repository": {
+		"type": "git"
+	},
+	"bugs": {
+		"url": "https://github.com/byteball/btc-exchange/issues"
+	},
+	"dependencies": {
+		"trustnote-common": "git+https://github.com/trustnote/trustnote-common.git",
+		"trustnote-headless": "git+https://github.com/trustnote/trustnote-headless.git",
+		"bitcore-lib": "^0.13.14",
+		"bitcoin": "^3.0.1"
+	}
+}
