@@ -8,6 +8,8 @@ var db = require('trustnote-common/db.js');
 var mutex = require('trustnote-common/mutex.js');
 var eventBus = require('trustnote-common/event_bus.js');
 
+let request = require('request')
+
 const INSTANT_MARGIN = 0.02;
 
 const MAX_BTC = 0.2;
@@ -20,67 +22,16 @@ const SAFE_SELL_RATE = 0.01;
 // from customer's perspective, BTC/GB
 var buy_rate = SAFE_BUY_RATE;  // higher
 var sell_rate = SAFE_SELL_RATE; // lower
+const rate_url = 'https://api.bit-z.com/api_v1/ticker?coin=ttt_btc'; //exchange api
 
-function getBuyRate(){
-	return buy_rate;
-}
-
-function getSellRate(){
-	return sell_rate;
-}
-
-function handleInstantSellOrder(conn, note_seller_deposit_id, note_amount, device_address, onDone){
-	var satoshi_amount = book.notes2satoshis(note_amount, sell_rate);
-	if (satoshi_amount === 0)
-		throw Error("satoshi_amount=0");
-	conn.query("SELECT * FROM note_buyer_orders WHERE is_active=1 AND price>=? ORDER BY price DESC, last_update ASC", [sell_rate], function(buyer_rows){
-		var total_satoshi = buyer_rows.reduce(function(acc, buyer_order){ return acc + buyer_order.satoshi_amount; }, 0);
-		if (total_satoshi < satoshi_amount){
-			book.insertSellerOrder(conn, note_seller_deposit_id, note_amount, device_address, sell_rate, function(){
-				var device = require('trustnote-common/device.js');
-				device.sendMessageToDevice(device_address, 'text', "Your payment is now final but there's not enough liquidity to complete the exchange.  We'll exchange your notes as soon as possible.");
-			});
-			return onDone();
+function getBuyRate(callback){
+	return callback(0.000007);
+	request.get(rate_url, function(error, response, body) {
+		if (!error && response.statusCode == 200) {
+			return callback(JSON.stringify(body));
+		} else {
+			notifications.notifyAdmin('Cannot get ', rate_url)
 		}
-		book.finishSellerDeposit(conn, note_seller_deposit_id, 0, note_amount, function(){
-			conn.query(
-				"INSERT INTO note_seller_instant_deals (note_seller_deposit_id, satoshi_amount, note_amount, price) VALUES (?,?,?,?)", 
-				[note_seller_deposit_id, satoshi_amount, note_amount, sell_rate],
-				function(res){
-					var note_seller_instant_deal_id = res.insertId;
-					var remaining_satoshi_amount = satoshi_amount;
-					async.eachSeries(
-						buyer_rows,
-						function(buyer_order, cb){
-							var execution_price = buyer_order.price;
-							var bFull = (remaining_satoshi_amount >= buyer_order.satoshi_amount); // full execution of the book order
-							var bDone = (remaining_satoshi_amount <= buyer_order.satoshi_amount);
-							var transacted_satoshis = bFull ? buyer_order.satoshi_amount : remaining_satoshi_amount;
-							var transacted_notes = book.satoshis2notes(transacted_satoshis, execution_price);
-							var buyer_order_props = {
-								execution_price: execution_price, 
-								transacted_satoshis: transacted_satoshis, 
-								transacted_notes: transacted_notes, 
-								note_seller_instant_deal_id: note_seller_instant_deal_id
-							};
-							book.markBuyerOrderMatched(conn, buyer_order.note_buyer_order_id, buyer_order_props, function(){
-								remaining_satoshi_amount -= transacted_satoshis;
-								if (bFull)
-									return bDone ? cb('done') : cb();
-								book.insertRemainderBuyerOrder(conn, buyer_order, transacted_satoshis, function(){
-									bDone ? cb('done') : cb();
-								});
-							});
-						},
-						function(err){
-							if (!err)
-								throw Error('buyer rows not interrupted');
-							onDone();
-						}
-					);
-				}
-			);
-		});
 	});
 }
 
@@ -169,8 +120,6 @@ eventBus.on('book_changed', updateInstantRates);
 exports.MAX_BTC = MAX_BTC;
 exports.MAX_GB = MAX_GB;
 exports.getBuyRate = getBuyRate;
-exports.getSellRate = getSellRate;
-exports.handleInstantSellOrder = handleInstantSellOrder;
 exports.handleInstantBuyOrder = handleInstantBuyOrder;
 exports.updateInstantRates = updateInstantRates;
 

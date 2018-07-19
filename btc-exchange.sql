@@ -6,14 +6,6 @@ CREATE TABLE states (
 	FOREIGN KEY (device_address) REFERENCES correspondent_devices(device_address)
 );
 
-
-CREATE TABLE current_prices (
-	device_address CHAR(33) NOT NULL PRIMARY KEY,
-	buy_price DECIMAL(20, 10) NULL,
-	sell_price DECIMAL(20, 10) NULL,
-	FOREIGN KEY (device_address) REFERENCES correspondent_devices(device_address)
-);
-
 -- bindings
 
 CREATE TABLE note_buyer_bindings (
