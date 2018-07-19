@@ -18,7 +18,7 @@ CREATE TABLE current_prices (
 
 CREATE TABLE note_buyer_bindings (
 	note_buyer_binding_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	out_noteball_address CHAR(32) NOT NULL UNIQUE,
+	out_note_address CHAR(32) NOT NULL UNIQUE,
 	to_bitcoin_address VARCHAR(34) NOT NULL UNIQUE,
 	device_address CHAR(33) NOT NULL,
 	creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -18,9 +18,10 @@
 		"url": "https://github.com/byteball/btc-exchange/issues"
 	},
 	"dependencies": {
-		"trustnote-common": "git+https://github.com/trustnote/trustnote-common.git",
-		"trustnote-headless": "git+https://github.com/trustnote/trustnote-headless.git",
+		"bitcoin": "^3.0.1",
 		"bitcore-lib": "^0.13.14",
-		"bitcoin": "^3.0.1"
+		"request": "^2.87.0",
+		"trustnote-common": "git+https://github.com/trustnote/trustnote-common.git",
+		"trustnote-headless": "git+https://github.com/trustnote/trustnote-headless.git"
 	}
 }

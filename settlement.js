@@ -133,7 +133,7 @@ function settleBookBtc(){
 function settleInstantnotes(){
 	mutex.lock(['settle_notes'], function(unlock){
 		db.query(
-			"SELECT note_buyer_instant_deals.satoshi_amount, note_amount, out_noteball_address, device_address, note_buyer_instant_deal_id \n\
+			"SELECT note_buyer_instant_deals.satoshi_amount, note_amount, out_note_address, device_address, note_buyer_instant_deal_id \n\
 			FROM note_buyer_instant_deals \n\
 			JOIN note_buyer_deposits USING(note_buyer_deposit_id) \n\
 			JOIN note_buyer_bindings USING(note_buyer_binding_id) \n\
@@ -142,7 +142,7 @@ function settleInstantnotes(){
 				async.eachSeries(
 					rows,
 					function(row, cb){
-						headlessWallet.issueChangeAddressAndSendPayment(null, row.note_amount, row.out_noteball_address, row.device_address, function(err, unit){
+						headlessWallet.issueChangeAddressAndSendPayment(null, row.note_amount, row.out_note_address, row.device_address, function(err, unit){
 							if (err){
 								notifications.notifyAdminAboutFailedPayment(err);
 								return cb();
@@ -175,7 +175,7 @@ function settleInstantnotes(){
 function settleBooknotes(){
 	mutex.lock(['settle_notes'], function(unlock){
 		db.query(
-			"SELECT sold_satoshi_amount, note_amount, out_noteball_address, note_buyer_bindings.device_address, note_buyer_order_id \n\
+			"SELECT sold_satoshi_amount, note_amount, out_note_address, note_buyer_bindings.device_address, note_buyer_order_id \n\
 			FROM note_buyer_orders \n\
 			JOIN note_buyer_deposits USING(note_buyer_deposit_id) \n\
 			JOIN note_buyer_bindings USING(note_buyer_binding_id) \n\
@@ -184,7 +184,7 @@ function settleBooknotes(){
 				async.eachSeries(
 					rows,
 					function(row, cb){
-						headlessWallet.issueChangeAddressAndSendPayment(null, row.note_amount, row.out_noteball_address, row.device_address, function(err, unit){
+						headlessWallet.issueChangeAddressAndSendPayment(null, row.note_amount, row.out_note_address, row.device_address, function(err, unit){
 							if (err){
 								notifications.notifyAdminAboutFailedPayment(err);
 								return cb();
