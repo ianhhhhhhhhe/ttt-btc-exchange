@@ -4,11 +4,8 @@ var util = require('util');
 var async = require('async');
 var bitcore = require('bitcore-lib');
 var Transaction = bitcore.Transaction;
-var EventEmitter = require('events').EventEmitter;
 var client = require('./bitcoin_client.js');
 var notifications = require('./notifications.js');
-var settlement = require('./settlement.js');
-var book = require('./book.js');
 var instant = require('./instant.js');
 var conf = require('trustnote-common/conf.js');
 var constants = require('trustnote-common/constants.js');
@@ -31,9 +28,21 @@ var wallet;
 var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.livenet;
 
 // TODO
-function getBtcBalanceFromAddress(args) {
-	let btc_address = args.address;
-	return btc_address;
+function getBtcBalanceFromAddress(args, callback) {
+	request({
+		url: 'https://blockchain.info/multiaddr?active='+args.address+'&limit=1',
+	 }, (error, response, body) => {
+		if (error){
+			return callback(error);
+		} else if (response.statusCode != 200) {
+			return callback(error, response.statusCode);
+		}
+		body = JSON.parse(body)
+		var total_recieved = body.wallet.total_received
+		var total_sent = body.wallet.total_sent
+		var balance = total_recieved - total_sent
+		return callback(error, response.statusCode, balance)
+	})
 }
 
 // TODO
@@ -55,13 +64,19 @@ let server = http.createServer((request, response) => {
 		response.writeHead(200, {"Content-Type": "application/json"})
 		switch (path) {
 			case '/getBtcBalance':
-				content.data = getBtcBalanceFromAddress(args)
-				break;
+				return getBtcBalanceFromAddress(args, function(error, status_code, body){
+					if(error || status_code) {
+						content.msg = 'Failed'
+						content.detailMsg = JSON.stringify(error)
+						content.code = status_code
+					}
+					content.data = body
+					response.write(JSON.stringify(content))
+					response.end();
+				})
 			default:
 				break;
 		}
-		response.write(JSON.stringify(content))
-		response.end();
 	} else if (request.method == 'POST') {
 		let path = url.parse(request.url, true).pathname
 		var data = '';
@@ -110,11 +125,11 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 		body: JSON.stringify(json)
 	}, (error, response, body) => {
 		if (error){
-			callback(error);
+			return callback(error);
 		} else if (response.statusCode != 200) {
-			callback(error, response.statusCode);
+			return callback(error, response.statusCode);
 		}
-		callback(error, response.statusCode, body)
+		return callback(error, response.statusCode, body)
 	})
 }
 
