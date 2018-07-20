@@ -131,11 +131,14 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 	})
 }
 
-function recordUserOrder(device_address, to_bitcoin_address, ttt_address, rate, callback) {
-	db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
-		device_address) values (?,?,?,?,?)', [ttt_address, to_bitcoin_address, device_address, invite_code, device_address], function() {
-			callback();
-		})
+function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
+	db.query('select * from note_buyer_orders where device_address=?', [device_address], function(rows){
+		if(rows.length===0){
+			db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
+				device_address) values (?,?,?)', [ttt_address, to_bitcoin_address, device_address], function() {
+				})
+		}
+	})
 }
 
 function readCurrentState(device_address, handleState){
@@ -228,9 +231,7 @@ function checkSolvency(){
 }
 
 function updateInviteCode(from_address, invite_code, callback){
-	db.query('update states set invite_code=? where device_address=?', [invite_code, from_address], () => {
-		callback();
-	})
+	db.query('update states set invite_code=? where device_address=?', [invite_code, from_address], () => {})
 }
 
 function updateConfirm(from_address, to_bitcoin_address, amount, rate) {
@@ -301,7 +302,7 @@ eventBus.on('text', function(from_address, text){
 		}
 
 		if (lc_text === 'skip') {
-			updateInviteCode(from_address, 'Null')
+			updateInviteCode(from_address, '00000000')
 			instant.getBuyRate(function(rates){
 				device.sendMessageToDevice(from_address, 'text', "You can:\n[buy notes](command:buy) at "+ rates +" BTC/MN.\n \n\
 				Please let me know your address (just click \"...\" button and select \"Insert my address\"");
@@ -311,7 +312,7 @@ eventBus.on('text', function(from_address, text){
 
 		if (lc_text === 'rates' || lc_text === 'rate'){
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can:\n[buy notes](command:buy) at "+ rates +" BTC/MN.");
+				device.sendMessageToDevice(from_address, 'text', "You can:buy notes at "+ rates +" BTC/MN.");
 			})
 			return;
 		}
@@ -320,12 +321,11 @@ eventBus.on('text', function(from_address, text){
 			return device.sendMessageToDevice(from_address, 'text', "List of commands:\n\n\
 			[buy](command:buy): send a order\n");
 
-		var arrMatches = text.match(/\b([A-Z2-7]{12})\b/);
+		var arrMatches = text.match(/\b([A-Z0-9]{12})\b/);
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can:\n[buy notes](command:buy) at "+ rates +" BTC/MN.\n \n\
-				Please let me know your address (just click \"...\" button and select \"Insert my address\"");
+				device.sendMessageToDevice(from_address, 'text', "You can:buy notes at "+ rates +" BTC/MN.\nPlease let me know your address (just click \"...\" button and select \"Insert my address\"");
 			})
 			return;
 		}
@@ -346,11 +346,8 @@ eventBus.on('text', function(from_address, text){
 			});
 			return;
 		}
-		else if (state === 'waiting_for_trustnote_address' && !bSetNewPrice)
+		else if (state === 'waiting_for_trustnote_address')
 			return device.sendMessageToDevice(from_address, 'text', "This doesn't look like a valid note address.  Please click \"...\" button at the bottom of the screen and select \"Insert my address\", then hit \"Send\" button.");
-		
-		if (bSetNewPrice)
-			return;
 		
 		switch(state){
 			case 'greeting':
