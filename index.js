@@ -292,7 +292,7 @@ eventBus.on('text', function(from_address, text){
 		}
 	}
 	
-	readCurrentState(from_address, invite_code, function(state){
+	readCurrentState(from_address, function(state, invite_code){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
