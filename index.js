@@ -30,7 +30,7 @@ var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.live
 // TODO
 function getBtcBalanceFromAddress(args, callback) {
 	request({
-		url: 'https://blockchain.info/multiaddr?active='+args.address+'&limit=1',
+		url: 'https://blockchain.info/balance?active='+args.address,
 	 }, (error, response, body) => {
 		if (error){
 			return callback(error);
@@ -38,9 +38,7 @@ function getBtcBalanceFromAddress(args, callback) {
 			return callback(error, response.statusCode);
 		}
 		body = JSON.parse(body)
-		var total_recieved = body.wallet.total_received
-		var total_sent = body.wallet.total_sent
-		var balance = total_recieved - total_sent
+		var balance = body[args.address].final_balance
 		return callback(error, response.statusCode, balance)
 	})
 }
