@@ -297,7 +297,6 @@ eventBus.on('text', function(from_address, text){
 		
 		if (lc_text === 'buy') {
 			device.sendMessageToDevice(from_address, 'text', "Please input your invite_code or click [skip](command:skip).");
-			updateCurrentPrice(from_address, 'buy', null);
 			return;
 		}
 
