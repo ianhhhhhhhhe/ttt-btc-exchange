@@ -14,7 +14,6 @@ CREATE TABLE note_buyer_orders (
 	out_note_address CHAR(32) NOT NULL UNIQUE,
 	to_bitcoin_address VARCHAR(34) NOT NULL UNIQUE,
 	device_address CHAR(33) NOT NULL,
-	invite_code CHAR(32) NULL,
 	creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (device_address) REFERENCES correspondent_devices(device_address)
 );

@@ -19,23 +19,71 @@ var ValidationUtils = require("trustnote-common/validation_utils.js");
 var desktopApp = require('trustnote-common/desktop_app.js');
 var headlessWallet = require('trustnote-headless');
 
+let request = require('request')
 let http = require('http')
 let url = require('url')
 
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
 
-var bTestnet = constants.version.match(/t$/);
+var bTestnet = true;
 var wallet;
 var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.livenet;
 
+// TODO
+function getBtcBalanceFromAddress(args) {
+	let btc_address = args.address;
+	return btc_address;
+}
+
+// TODO
+function getUserStatus(args){
+	return JSON.stringify(args)
+}
+
+// HTTP Server TODO
 let server = http.createServer((request, response) => {
-	let args = url.parse(request.url, true).query
-	console.log(request.url)
-	console.log(args)
-	response.writeHead(200, {"Content-Type": "application/json"})
-	response.write(JSON.stringify(args))
-	response.end();
+	if (request.method == 'GET') {
+		let path = url.parse(request.url, true).pathname
+		let args = url.parse(request.url, true).query
+		let content = {
+			"code": 200,
+			"msg": "Success",
+			"detailMsg": null,
+			"data": null
+		}
+		response.writeHead(200, {"Content-Type": "application/json"})
+		switch (path) {
+			case '/getBtcBalance':
+				content.data = getBtcBalanceFromAddress(args)
+				break;
+			default:
+				break;
+		}
+		response.write(JSON.stringify(content))
+		response.end();
+	} else if (request.method == 'POST') {
+		let path = url.parse(request.url, true).pathname
+		var data = '';
+		let content = {
+			"code": 200,
+			"msg": "Success",
+			"detailMsg": null,
+			"data": null
+		}
+		response.writeHead(200, {"Content-Type": "application/json"})
+		request.on('data', function (chunk) {
+			// chunk 默认是一个二进制数据，和 data 拼接会自动 toString
+			data += chunk;
+		});
+		request.on('end', function () {
+			console.log(data);
+			content.data = JSON.parse(data)
+			content.data.path = path
+			response.write(JSON.stringify(content))
+			response.end()
+		});
+	}
 })
 
 server.listen(8080);
@@ -43,10 +91,44 @@ console.log('\n==================\n')
 console.log('Server is running')
 console.log('\n==================\n')
 
+function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_code, quantity, receipt, rate, states, callback) {
+	var json = {
+		'currency': 'TTT',
+		'payment': 'BTC',
+		'quantity': quantity,
+		'receipt': receipt,
+		'toAddress': to_bitcoin_address,
+		'tttAddress': ttt_address,
+		'deviceAddress': device_address,
+		'rate': rate,
+		'states': states,
+		'inviteCode': invite_code
+	}
+	request({
+		url: '/exchange-order/save-order.htm',
+		method: 'POST',
+		body: JSON.stringify(json)
+	}, (error, response, body) => {
+		if (error){
+			callback(error);
+		} else if (response.statusCode != 200) {
+			callback(error, response.statusCode);
+		}
+		callback(error, response.statusCode, body)
+	})
+}
+
+function recordUserOrder(device_address, to_bitcoin_address, ttt_address, rate, callback) {
+	db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
+		device_address) values (?,?,?,?,?)', [ttt_address, to_bitcoin_address, device_address, invite_code, device_address], function() {
+			callback();
+		})
+}
+
 function readCurrentState(device_address, handleState){
-	db.query("SELECT state FROM states WHERE device_address=?", [device_address], function(rows){
+	db.query("SELECT state, invite_code FROM states WHERE device_address=?", [device_address], function(rows){
 		if (rows.length > 0)
-			return handleState(rows[0].state);
+			return handleState(rows[0].state, rows[0].invite_code);
 		var state = "greeting";
 		db.query("INSERT "+db.getIgnore()+" INTO states (device_address, state) VALUES (?,?)", [device_address, state], function(){
 			handleState(state);
@@ -74,30 +156,11 @@ function readCurrentOrderPrice(device_address, order_type, handlePrice){
 	);
 }
 
-function updateCurrentPrice(device_address, order_type, price, onDone){
-	if (!onDone)
-		onDone = function(){};
-	db.query("INSERT "+db.getIgnore()+" INTO current_prices (device_address) VALUES (?)", [device_address], function(){
-		db.query("UPDATE current_prices SET "+order_type+"_price=? WHERE device_address=?", [price, device_address], function(){
-			if (!price)
-				return onDone();
-			db.query(
-				"UPDATE note_"+order_type+"er_orders SET price=?, last_update="+db.getNow()+" WHERE device_address=? AND is_active=1", 
-				[price, device_address], 
-				function(){
-					onDone();
-					book.matchUnderLock();
-				}
-			);
-		});
-	});
-}
-
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
 	mutex.lock([device_address], function(device_unlock){
 		device_unlock()
 		return handleBitcoinAddress('tobitcoinaddress');
-		db.query("SELECT to_bitcoin_address FROM note_buyer_bindings WHERE out_note_address=?", [out_note_address], function(rows){
+		db.query("SELECT to_bitcoin_address FROM note_buyer_orders WHERE out_note_address=?", [out_note_address], function(rows){
 			if (rows.length > 0){ // already know this note address
 				device_unlock()
 				return handleBitcoinAddress(rows[0].to_bitcoin_address);
@@ -109,7 +172,7 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_note_address,
 						throw Error(err);
 					console.log('BTC Address:', to_bitcoin_address);
 					db.query(
-						"INSERT "+db.getIgnore()+" INTO note_buyer_bindings \n\
+						"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
 						(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
 						[device_address, out_note_address, to_bitcoin_address],
 						function(){
@@ -124,52 +187,12 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_note_address,
 	});
 }
 
-function exchangeBtcTonotes(note_buyer_deposit_id, onDone){
-	if (!onDone)
-		onDone = function(){};
-	db.query(
-		"SELECT satoshi_amount, out_note_address, note_buyer_bindings.device_address, confirmation_date, buy_price \n\
-		FROM note_buyer_deposits JOIN note_buyer_bindings USING(note_buyer_binding_id) LEFT JOIN current_prices USING(device_address) \n\
-		WHERE note_buyer_deposit_id=?",
-		[note_buyer_deposit_id],
-		function(rows){
-			if (rows.length !== 1)
-				throw Error('note buyer deposit not found '+note_buyer_deposit_id);
-			var row = rows[0];
-			if (row.confirmation_date) // already exchanged
-				return onDone();
-			db.executeInTransaction(function(conn, onTransactionDone){
-				if (row.buy_price)
-					book.insertBuyerOrder(conn, note_buyer_deposit_id, row.satoshi_amount, row.device_address, row.buy_price, onTransactionDone);
-				else
-					instant.handleInstantBuyOrder(conn, note_buyer_deposit_id, row.satoshi_amount, row.device_address, onTransactionDone);
-			}, function(){
-				updateState(row.device_address, 'done');
-				if (row.buy_price)
-					book.matchUnderLock();
-				else{
-					settlement.settleInstantnotes();
-					settlement.settleBookBtc();
-					instant.updateInstantRates();
-				}
-				onDone();
-			});
-		}
-	);
-}
-
-function exchangeBtcTonotesUnderLock(note_buyer_deposit_id){
-	mutex.lock(['btc2notes'], function(unlock){
-		exchangeBtcTonotes(note_buyer_deposit_id, unlock);
-	});
-}
-
 function getBtcBalance(count_confirmations, handleBalance, counter){
 	client.getBalance('*', count_confirmations, function(err, btc_balance, resHeaders) {
 		if (err){
 			// retry up to 3 times
 			if (counter >= 3)
-				throw Error("getBalance "+count_confirmations+" failed: "+err);
+				return notifications.notifyAdmin("getBalance "+count_confirmations+" failed: "+err);
 			counter = counter || 0;
 			console.log('getBalance attempt #'+counter+' failed: '+err);
 			setTimeout( () => {
@@ -185,24 +208,29 @@ function checkSolvency(){
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
 		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
-		getBtcBalance(0, function(btc_balance) {
-			db.query("SELECT SUM(satoshi_amount) AS owed_satoshis FROM note_buyer_orders WHERE is_active=1", function(rows){
-				var owed_satoshis = rows[0].owed_satoshis || 0;
-				db.query("SELECT SUM(note_amount) AS owed_notes FROM note_seller_orders WHERE is_active=1", function(rows){
-					var owed_notes = rows[0].owed_notes || 0;
-					if (owed_satoshis > btc_balance*1e8 || owed_notes > note_balance)
-						notifications.notifyAdmin("Solvency check failed:\n"+btc_balance+' BTC\n'+(owed_satoshis/1e8)+' BTC owed\n'+note_balance+' notes\n'+owed_notes+' notes owed');
-				});
-			});
-		});
+		if(note_balance <= 1000000000000) {
+			notifications.notifyAdmin("Not enough balance: " + note_balance);
+		}
 	});
 }
 
-function updateInviteCode(from_address, invite_code){
-	
+function updateInviteCode(from_address, invite_code, callback){
+	db.query('update note_buyer_orders set invite_code=? where device_address=?', [invite_code, from_address], () => {
+		callback();
+	})
 }
 
-instant.updateInstantRates();
+function updateConfirm(from_address, to_bitcoin_address, amount, rate) {
+	db.query('select invite_code from states where device_address=?', [from_address], function(rows) {
+		let invite_code = rows[0].invite_code;
+		db.query('select * from note_buyer_orders where device_address=?', [from_address], function(rows){
+			let ttt_address = rows[0].out_note_address;
+			postUserOrder(from_address, to_bitcoin_address, ttt_address, invite_code, amount, null, rate, "已完成")
+		})
+	})
+}
+
+// setInterval(checkSolvency, 10000);
 
 var bHeadlessWalletReady = false;
 eventBus.once('headless_wallet_ready', function(){
@@ -237,25 +265,20 @@ eventBus.on('text', function(from_address, text){
 	}
 	
 	if (headlessWallet.isControlAddress(from_address)){
-		if (lc_text === 'balance')
+		if (lc_text === 'balance') {
 			return getBtcBalance(0, function(balance) {
 				return getBtcBalance(1, function(confirmed_balance) {
 					var unconfirmed_balance = balance - confirmed_balance;
 					var btc_balance_str = balance+' BTC';
 					if (unconfirmed_balance)
 						btc_balance_str += ' ('+unconfirmed_balance+' unconfirmed)';
-					db.query("SELECT SUM(satoshi_amount) AS owed_satoshis FROM note_buyer_orders WHERE is_active=1", function(rows){
-						var owed_satoshis = rows[0].owed_satoshis || 0;
-						db.query("SELECT SUM(note_amount) AS owed_notes FROM note_seller_orders WHERE is_active=1", function(rows){
-							var owed_notes = rows[0].owed_notes || 0;
-							device.sendMessageToDevice(from_address, 'text', btc_balance_str+'\n'+(owed_satoshis/1e8)+' BTC owed\n'+owed_notes+' notes owed');
-						});
-					});
+					device.sendMessageToDevice(from_address, 'text', btc_balance_str+'\n');
 				});
 			});
+		}
 	}
 	
-	readCurrentState(from_address, function(state){
+	readCurrentState(from_address, invite_code, function(state){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
@@ -303,6 +326,7 @@ eventBus.on('text', function(from_address, text){
 					var will_do_text = 'Your bitcoins will be added to the [book](command:book) at '+buy_price+' BTC/MN when the payment has at least '+MIN_CONFIRMATIONS+' confirmations.'
 					var maximum_text = buy_price ? "" : "maximum amount is "+instant.MAX_BTC+" BTC,";
 					device.sendMessageToDevice(from_address, 'text', "Got it, you'll receive your notes to "+out_note_address+".  Now please pay BTC to "+to_bitcoin_address+".  We'll exchange as much as you pay, but the "+maximum_text+" minimum is "+(MIN_SATOSHIS/1e8)+" BTC (if you send less, it'll be considered a donation).  "+will_do_text);
+					recordUserOrder(from_address, to_bitcoin_address, out_note_address, invite_code)
 				});
 				updateState(from_address, 'waiting_for_payment');
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
