@@ -228,7 +228,7 @@ function checkSolvency(){
 }
 
 function updateInviteCode(from_address, invite_code, callback){
-	db.query('update note_buyer_orders set invite_code=? where device_address=?', [invite_code, from_address], () => {
+	db.query('update states set invite_code=? where device_address=?', [invite_code, from_address], () => {
 		callback();
 	})
 }
