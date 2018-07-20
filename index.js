@@ -260,6 +260,7 @@ eventBus.once('headless_wallet_ready', function(){
 
 eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
+		var device = require('trustnote-common/device');
 		if (state === 'waiting_for_confirmations')
 			return device.sendMessageToDevice(from_address, 'text', "Received your payment and waiting that it is confirmed.");
 		updateState(from_address, 'greeting');
