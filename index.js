@@ -455,7 +455,7 @@ function updateConfirmationCountOfRecentTransactionsAndExchange(){
 	var min_confirmations = MIN_CONFIRMATIONS
 	mutex.lock(['btc2bytes'], function(unlock){
 		db.query(
-			"SELECT * FROM note_buyer_orders WHERE confirmation_date IS NULL GROUP BY txid", 
+			"SELECT * FROM note_buyer_orders WHERE confirmation_date IS NULL", 
 			function(rows){
 				async.eachSeries(
 					rows,
