@@ -485,11 +485,11 @@ function updateConfirmationCountOfRecentTransactionsAndExchange(){
 	});
 }
 
-function ExchangeService(options) {
-	this.node = options.node;
-	EventEmitter.call(this, options);
-	this.bus = this.node.openBus();
-}
+// function ExchangeService(options) {
+// 	this.node = options.node;
+// 	EventEmitter.call(this, options);
+// 	this.bus = this.node.openBus();
+// }
 
 function refreshCountConfirmations(txid, old_count_confirmations, handleNewCountConfirmations){
 	ExchangeService.node.services.bitcoind.getDetailedTransaction(txid, function(err, info) {
@@ -516,4 +516,4 @@ function refreshCountConfirmations(txid, old_count_confirmations, handleNewCount
 	});
 }
 
-setInterval(updateConfirmationCountOfRecentTransactionsAndExchange, 10000)
+// setInterval(updateConfirmationCountOfRecentTransactionsAndExchange, 10000)
