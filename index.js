@@ -34,7 +34,7 @@ function payToAddress(args, callback) {
 	}
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
-		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
+		var note_balance = assocBalances['base'].stable;
 		if(note_balance < amount) {
 			return callback('Not Enough Fund')
 		}
