@@ -24,7 +24,7 @@ const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
 
 var bTestnet = true;
 var wallet;
-var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.livenet;
+var bitcoinNetwork = bitcore.Networks.testnet;
 
 function payToAddress(args, callback) {
 	var address = args.address
@@ -71,12 +71,30 @@ function getWalletBalance(callback){
 	});
 }
 
-// TODO
-function getUserStatus(args){
-	return JSON.stringify(args)
+function postTranferResult(device_address, amount, rate, state, ttt_address, invite_code, callback) {
+	var json = {
+		'tttAddress': ttt_address,
+		'deviceAddress': device_address,
+		'rate': rate,
+		'amount': amount,
+		'state': state,
+		'inviteCode': invite_code
+	}
+	request({
+		url: '/exchange-order/save-order.htm',
+		method: 'POST',
+		body: JSON.stringify(json)
+	}, (error, response, body) => {
+		if (error){
+			return callback(error);
+		} else if (response.statusCode != 200) {
+			return callback(error, response.statusCode);
+		}
+		return callback(error, response.statusCode, body)
+	})
 }
 
-function postTranferResult(args, callback) {
+function getTranferResult(args, callback) {
 	return callback(args)
 }
 
@@ -120,7 +138,7 @@ let server = http.createServer((request, response) => {
 						content.code = 500
 						content.msg = 'Error'
 					} else if (JSON.stringify(res)=='Uncorrect Address') {
-						content.code = 500
+						content.code = 501
 						content.msg = 'Uncorrect Address'
 					} else {
 						content.data = res
@@ -155,8 +173,8 @@ let server = http.createServer((request, response) => {
 			console.log(data);
 			content.data = JSON.parse(data)
 			switch(path){
-				case '/postTransferResult':
-				    return postTranferResult(data, function(res){
+				case '/getTransferResult':
+				    return getTranferResult(data, function(res){
 						content.data = res
 						response.write(JSON.stringify(content))
 						response.end()
