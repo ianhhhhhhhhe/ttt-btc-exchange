@@ -249,8 +249,6 @@ function readCurrentState(device_address, handleState){
 
 function updateState(device_address, state, onDone){
 	db.query("UPDATE states SET state=? WHERE device_address=?", [state, device_address], function(){
-		if (onDone)
-			onDone();
 	});
 }
 
