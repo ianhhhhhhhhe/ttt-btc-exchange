@@ -304,7 +304,7 @@ function checkSolvency(){
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
 		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
-		if(note_balance <= 1000000000000) {
+		if(note_balance <= 1000000) {
 			notifications.notifyAdmin("Not enough balance: " + note_balance);
 		}
 	});
@@ -324,7 +324,7 @@ function updateConfirm(from_address, to_bitcoin_address, amount, rate) {
 	})
 }
 
-// setInterval(checkSolvency, 10000);
+setInterval(checkSolvency, 10000);
 
 var bHeadlessWalletReady = false;
 eventBus.once('headless_wallet_ready', function(){
