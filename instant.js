@@ -2,7 +2,6 @@
 'use strict';
 var async = require('async');
 var notifications = require('./notifications.js');
-var settlement = require('./settlement.js');
 var book = require('./book.js');
 var db = require('trustnote-common/db.js');
 var mutex = require('trustnote-common/mutex.js');
@@ -25,7 +24,6 @@ var sell_rate = SAFE_SELL_RATE; // lower
 const rate_url = 'https://api.bit-z.com/api_v1/ticker?coin=ttt_btc'; //exchange api
 
 function getBuyRate(callback){
-	return callback(0.000007);
 	request.get(rate_url, function(error, response, body) {
 		if (!error && response.statusCode == 200) {
 			return callback(JSON.stringify(body));

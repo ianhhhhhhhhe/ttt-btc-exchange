@@ -13,6 +13,7 @@ var eventBus = require('trustnote-common/event_bus.js');
 var ValidationUtils = require("trustnote-common/validation_utils.js");
 var desktopApp = require('trustnote-common/desktop_app.js');
 var headlessWallet = require('trustnote-headless');
+var createPayment = require('./create_payment')
 
 let request = require('request')
 let http = require('http')
@@ -25,7 +26,20 @@ var bTestnet = true;
 var wallet;
 var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.livenet;
 
-// TODO
+function payToAddress(args, callback) {
+	var address = args.address
+	var amount = args.amount
+	return callback(args)
+	var Wallet = require('trustnote-common/wallet.js');
+	Wallet.readBalance(wallet, function(assocBalances){
+		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
+		if(note_balance < amount) {
+			return callback('Not Enough Fund')
+		}
+		createPayment(address, amount, callback)
+	})
+}
+
 function getBtcBalanceFromAddress(args, callback) {
 	request({
 		url: 'https://blockchain.info/balance?active='+args.address,
@@ -39,6 +53,18 @@ function getBtcBalanceFromAddress(args, callback) {
 		var balance = body[args.address].final_balance
 		return callback(error, response.statusCode, balance)
 	})
+}
+
+function getWalletBalance(callback){
+	var Wallet = require('trustnote-common/wallet.js');
+	Wallet.readBalance(wallet, function(assocBalances){
+		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
+		callback({
+			"balance": note_balance,
+			"stable": assocBalances['base'].stable,
+			"pending": assocBalances['base'].pending
+		})
+	});
 }
 
 // TODO
@@ -73,6 +99,23 @@ let server = http.createServer((request, response) => {
 					content.code = status_code ? status_code : 200
 					response.write(JSON.stringify(content))
 					response.end();
+				})
+			case '/getWalletBalance':
+				return getWalletBalance(function(balance){
+					content.data = balance
+					response.write(JSON.stringify(content))
+					response.end();
+				})
+			case '/payToAddress':
+			    return payToAddress(args, function(res){
+					if(JSON.stringify(res)=='Not Enough Fund') {
+						content.code = 500
+						content.msg = 'Error'
+					} else {
+						content.data = res
+					}
+					response.write(JSON.stringify(content))
+					response.end()
 				})
 			default:
 			    return NotFound(() => {
