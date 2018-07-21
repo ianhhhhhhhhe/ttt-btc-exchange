@@ -1,7 +1,5 @@
 /*jslint node: true */
 'use strict';
-var util = require('util');
-var async = require('async');
 var bitcore = require('bitcore-lib');
 var Transaction = bitcore.Transaction;
 var client = require('./bitcoin_client.js');
@@ -99,7 +97,7 @@ let server = http.createServer((request, response) => {
 	}
 })
 
-server.listen(8080);
+server.listen(9000);
 console.log('\n==================\n')
 console.log('Server is running')
 console.log('\n==================\n')
@@ -139,6 +137,7 @@ function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
 				})
 		}
 	})
+	updateState(from_address, 'waiting_for_confirmations')
 }
 
 function readCurrentState(device_address, handleState){
@@ -157,19 +156,6 @@ function updateState(device_address, state, onDone){
 		if (onDone)
 			onDone();
 	});
-}
-
-function readCurrentOrderPrice(device_address, order_type, handlePrice){
-	var func = (order_type === 'buy') ? 'MAX' : 'MIN';
-	db.query(
-		"SELECT "+func+"(price) AS best_price FROM note_"+order_type+"er_orders WHERE device_address=? AND is_active=1", 
-		[device_address], 
-		function(rows){
-			if (rows.length === 0)
-				return handlePrice(null);
-			handlePrice(rows[0].best_price);
-		}
-	);
 }
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
