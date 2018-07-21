@@ -72,15 +72,19 @@ function getUserStatus(args){
 	return JSON.stringify(args)
 }
 
+function postTranferResult(args, callback) {
+	return callback(args)
+}
+
 function NotFound(callback){
 	callback()
 }
 
 // HTTP Server TODO
 let server = http.createServer((request, response) => {
+	let path = url.parse(request.url, true).pathname
+	let args = url.parse(request.url, true).query
 	if (request.method == 'GET') {
-		let path = url.parse(request.url, true).pathname
-		let args = url.parse(request.url, true).query
 		let content = {
 			"code": 200,
 			"msg": "Success",
@@ -111,6 +115,9 @@ let server = http.createServer((request, response) => {
 					if(JSON.stringify(res)=='Not Enough Fund') {
 						content.code = 500
 						content.msg = 'Error'
+					} else if (JSON.stringify(res)=='Uncorrect Address') {
+						content.code = 500
+						content.msg = 'Uncorrect Address'
 					} else {
 						content.data = res
 					}
@@ -143,9 +150,22 @@ let server = http.createServer((request, response) => {
 		request.on('end', function () {
 			console.log(data);
 			content.data = JSON.parse(data)
-			content.data.path = path
-			response.write(JSON.stringify(content))
-			response.end()
+			switch(path){
+				case '/postTransferResult':
+				    return postTranferResult(data, function(res){
+						content.data = res
+						response.write(JSON.stringify(content))
+						response.end()
+					})
+				default:
+					return NotFound(function(){
+						content.code = 404
+						content.msg = 'Not Found'
+						content.data = null
+						response.write(JSON.stringify(content))
+						response.end()
+					})
+			}
 		});
 	}
 })
@@ -343,15 +363,15 @@ eventBus.on('text', function(from_address, text){
 		if (lc_text === 'skip') {
 			updateInviteCode(from_address, '00000000')
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can:\n[buy notes](command:buy) at "+ rates +" BTC/MN.\n \n\
+				device.sendMessageToDevice(from_address, 'text', "You can: buy notes at "+ rates +" BTC/MN.\n \n\
 				Please let me know your address (just click \"...\" button and select \"Insert my address\"");
 			})
 			return;
 		}
 
 		if (lc_text === 'rates' || lc_text === 'rate'){
-			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can:buy notes at "+ rates +" BTC/MN.");
+			instant.getBuyRate(function(rates){ 
+				device.sendMessageToDevice(from_address, 'text', "You can: buy notes at "+ rates +" BTC/MN.");
 			})
 			return;
 		}

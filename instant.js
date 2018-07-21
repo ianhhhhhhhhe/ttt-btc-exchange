@@ -21,12 +21,14 @@ const SAFE_SELL_RATE = 0.01;
 // from customer's perspective, BTC/GB
 var buy_rate = SAFE_BUY_RATE;  // higher
 var sell_rate = SAFE_SELL_RATE; // lower
-const rate_url = 'https://api.bit-z.com/api_v1/ticker?coin=ttt_btc'; //exchange api
+const rate_url = 'https://api.bit-z.pro/api_v1/ticker?coin=ttt_btc'; //exchange api
 
 function getBuyRate(callback){
 	request.get(rate_url, function(error, response, body) {
 		if (!error && response.statusCode == 200) {
-			return callback(JSON.stringify(body));
+			var res = JSON.parse(body)
+			var buy = res.data.buy
+			return callback(buy);
 		} else {
 			notifications.notifyAdmin('Cannot get ', rate_url)
 		}

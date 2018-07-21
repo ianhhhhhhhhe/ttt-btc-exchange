@@ -2,12 +2,16 @@
 "use strict";
 var headlessWallet = require('trustnote-headless/start.js');
 var eventBus = require('trustnote-common/event_bus.js');
+var validationUtil = require('trustnote-common/validation_utils');
 
 function onError(err){
 	throw Error(err);
 }
 
 function createPayment(payee_address, amount, callback){
+    if(validationUtil.isValidAddress(payee_address)){
+        callback('Uncorrect Address')
+    }
 	var composer = require('trustnote-common/composer.js');
 	var network = require('trustnote-common/network.js');
 	var callbacks = composer.getSavingCallbacks({
