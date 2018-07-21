@@ -233,8 +233,6 @@ function updateState(device_address, state, onDone){
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
 	mutex.lock([device_address], function(device_unlock){
-		device_unlock()
-		return handleBitcoinAddress('tobitcoinaddress');
 		db.query("SELECT to_bitcoin_address FROM note_buyer_orders WHERE out_note_address=?", [out_note_address], function(rows){
 			if (rows.length > 0){ // already know this note address
 				device_unlock()
