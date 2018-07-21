@@ -1,5 +1,6 @@
 /*jslint node: true */
 'use strict';
+var async = require('async');
 var bitcore = require('bitcore-lib');
 var Transaction = bitcore.Transaction;
 var client = require('./bitcoin_client.js');
