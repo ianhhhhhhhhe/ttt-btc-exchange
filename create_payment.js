@@ -9,9 +9,6 @@ function onError(err){
 }
 
 function createPayment(payee_address, amount, callback){
-    if(validationUtil.isValidAddress(payee_address)){
-        callback('Uncorrect Address')
-    }
 	var composer = require('trustnote-common/composer.js');
 	var network = require('trustnote-common/network.js');
 	var callbacks = composer.getSavingCallbacks({
@@ -22,10 +19,10 @@ function createPayment(payee_address, amount, callback){
 		}
 	});
 
-	var from_address = "PYQJWUWRMUUUSUHKNJWFHSR5OADZMUYR";
+	var from_address = "QJ46SU2OG4WFQ5DW25ULT64ZJKB5MQKO";
 	var arrOutputs = [
 		{address: from_address, amount: 0},      // the change
-		{address: payee_address, amount: amount}  // the receiver
+		{address: payee_address, amount: parseInt(amount)}  // the receiver
 	];
     composer.composePaymentJoint([from_address], arrOutputs, headlessWallet.signer, callbacks);
     callback('Success')

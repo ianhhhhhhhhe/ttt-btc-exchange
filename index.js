@@ -29,14 +29,18 @@ var bitcoinNetwork = bTestnet ? bitcore.Networks.testnet : bitcore.Networks.live
 function payToAddress(args, callback) {
 	var address = args.address
 	var amount = args.amount
-	return callback(args)
+	if(!ValidationUtils.isValidAddress(address)){
+		return callback('Uncorrect Address')
+	}
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
 		var note_balance = assocBalances['base'].stable + assocBalances['base'].pending;
 		if(note_balance < amount) {
 			return callback('Not Enough Fund')
 		}
-		createPayment(address, amount, callback)
+		createPayment.createPayment(address, amount, function(res){
+			callback(res)
+		})
 	})
 }
 
