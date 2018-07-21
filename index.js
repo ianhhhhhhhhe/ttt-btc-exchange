@@ -46,6 +46,10 @@ function getUserStatus(args){
 	return JSON.stringify(args)
 }
 
+function NotFound(callback){
+	callback()
+}
+
 // HTTP Server TODO
 let server = http.createServer((request, response) => {
 	if (request.method == 'GET') {
@@ -61,16 +65,22 @@ let server = http.createServer((request, response) => {
 		switch (path) {
 			case '/getBtcBalance':
 				return getBtcBalanceFromAddress(args, function(error, status_code, body){
-					if(error || status_code) {
-						content.msg = 'Failed'
-						content.detailMsg = JSON.stringify(error)
-						content.code = status_code
-					}
 					content.data = body
+					if(error) {
+						content.detailMsg = JSON.stringify(error)
+						content.msg = 'Failed'
+					}
+					content.code = status_code ? status_code : 200
 					response.write(JSON.stringify(content))
 					response.end();
 				})
 			default:
+			    return NotFound(() => {
+					content.code = 404
+					content.msg = 'Not Found'
+					response.write(JSON.stringify(content))
+					response.end()
+				})
 				break;
 		}
 	} else if (request.method == 'POST') {
