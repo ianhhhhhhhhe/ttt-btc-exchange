@@ -10,8 +10,8 @@ CREATE TABLE states (
 
 CREATE TABLE note_buyer_orders (
 	note_buyer_binding_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	out_note_address CHAR(32) NOT NULL UNIQUE,
-	to_bitcoin_address VARCHAR(34) NOT NULL UNIQUE,
+	out_note_address CHAR(32) NOT NULL,
+	to_bitcoin_address VARCHAR(34) NOT NULL,
 	device_address CHAR(33) NOT NULL,
 	creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
