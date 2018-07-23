@@ -1,13 +1,10 @@
 /*jslint node: true */
 'use strict';
-var async = require('async');
 var bitcore = require('bitcore-lib');
-var Transaction = bitcore.Transaction;
 var client = require('./bitcoin_client.js');
 var notifications = require('./notifications.js');
 var instant = require('./instant.js');
 var conf = require('trustnote-common/conf.js');
-var constants = require('trustnote-common/constants.js');
 var db = require('trustnote-common/db.js');
 var mutex = require('trustnote-common/mutex.js');
 var eventBus = require('trustnote-common/event_bus.js');
@@ -23,9 +20,7 @@ let url = require('url')
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
 
-var bTestnet = true;
 var wallet;
-var bitcoinNetwork = bitcore.Networks.testnet;
 
 function payToAddress(args, callback) {
 	var address = args.address
@@ -82,10 +77,10 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 		'inviteCode': invite_code
 	}
 	request({
-		url: 'http://10.10.10.163:8080/exchange-order/save-order.htm',
+		url: 'https://testactivity.trustnote.org/exchange-order/save-order.htm',
 		method: 'POST',
 		headers:{
-            Referer: '10.10.10.163:8080'
+            Referer: 'https://testactivity.trustnote.org'
         },
 		body: JSON.stringify(json)
 	}, (error, response, body) => {
@@ -201,9 +196,9 @@ let server = http.createServer((request, response) => {
 })
 
 server.listen(9000);
-console.log('\n==================\n')
+console.log('\n==================')
 console.log('Server is running')
-console.log('\n==================\n')
+console.log('==================\n')
 
 function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_code, quantity, receipt, rate, states, callback) {
 	var json = {
@@ -232,13 +227,6 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 	})
 }
 
-function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
-	db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
-		device_address) values (?,?,?)', [ttt_address, to_bitcoin_address, device_address], function() {
-			updateState(device_address, 'waiting_for_confirmations')
-	})
-}
-
 function readCurrentState(device_address, handleState){
 	db.query("SELECT state, invite_code FROM states WHERE device_address=?", [device_address], function(rows){
 		if (rows.length > 0)
@@ -258,6 +246,7 @@ function updateState(device_address, state, onDone){
 }
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
+	mutex.lock(["new_bitcoin_address"], function(unlock){
 	client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
 		if (err)
 			throw Error(err);
@@ -267,10 +256,12 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_note_address,
 			(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
 			[device_address, out_note_address, to_bitcoin_address],
 			function(){
+					unlock()
 				handleBitcoinAddress(to_bitcoin_address);
 			}
 		);
 	});
+	})
 }
 
 function checkSolvency(){
