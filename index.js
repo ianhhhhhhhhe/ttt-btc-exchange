@@ -36,6 +36,7 @@ function payToAddress(args, callback) {
 		}
 		createPayment.createPayment(address, amount, function(res){
 			db.query('select device_address from note_buyer_orders where out_note_address=?', [address], function(rows){
+				const device = require('trustnote-common/device')
 				device.sendMessageToDevice(rows[0].device_address, 'text', 'You have successfully purchased '+ amount +' TTT. Please click "WALLET" to view the detail')
 			})
 			callback(res)
