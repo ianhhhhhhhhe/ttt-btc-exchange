@@ -415,8 +415,6 @@ eventBus.on('text', function(from_address, text){
 			var out_note_address = arrMatches[1];
 			assignOrReadDestinationBitcoinAddress(from_address, out_note_address, function(to_bitcoin_address){
 				instant.getBuyRate(function(buy_price){
-					var will_do_text = 'Your bitcoins will be added to the [book](command:book) at '+buy_price+' BTC/MN when the payment has at least '+MIN_CONFIRMATIONS+' confirmations.'
-					var maximum_text = buy_price ? "" : "maximum amount is "+instant.MAX_BTC+" BTC,";
 					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
 					recordUserOrder(from_address, to_bitcoin_address, out_note_address, invite_code)
 				});
