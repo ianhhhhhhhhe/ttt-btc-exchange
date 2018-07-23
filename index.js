@@ -384,8 +384,7 @@ eventBus.on('text', function(from_address, text){
 		if (lc_text === 'skip') {
 			updateInviteCode(from_address, '00000000')
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can: buy notes at "+ rates +" BTC/MN.\n \n\
-				Please let me know your address (just click \"...\" button and select \"Insert my address\"");
+				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
@@ -405,7 +404,7 @@ eventBus.on('text', function(from_address, text){
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "List price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
+				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
