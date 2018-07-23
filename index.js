@@ -86,7 +86,7 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 		method: 'POST',
 		headers:{
             Referer: '10.10.10.163:8080'
-        }
+        },
 		body: JSON.stringify(json)
 	}, (error, response, body) => {
 		if (error){
