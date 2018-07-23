@@ -74,7 +74,6 @@ function postTranferResult(device_address, ttt_address, to_bitcoin_address, invi
 	var json = {
 		'tttAddress': ttt_address,
 		'deviceAddress': device_address,
-		'rate': rate,
 		'amount': amount,
 		'state': state,
 		'inviteCode': invite_code
