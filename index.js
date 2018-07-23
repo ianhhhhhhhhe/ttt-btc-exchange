@@ -82,7 +82,7 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 		'inviteCode': invite_code
 	}
 	request({
-		url: '/exchange-order/save-order.htm',
+		url: '10.10.10.163/exchange-order/save-order.htm',
 		method: 'POST',
 		body: JSON.stringify(json)
 	}, (error, response, body) => {
@@ -96,6 +96,10 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 }
 
 function getTranferResult(args, callback) {
+	let from_address = args.from_address
+	let amount = args.amount
+	let receipt = args.receipt
+	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ amount +' BTC for ' + receipt +' TTT. Please click "WALLET" to view the detail')
 	return callback(args)
 }
 
@@ -225,17 +229,6 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 	})
 }
 
-function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
-	db.query('select * from note_buyer_orders where device_address=?', [device_address], function(rows){
-		if(rows.length===0){
-			db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
-				device_address) values (?,?,?)', [ttt_address, to_bitcoin_address, device_address], function() {
-				})
-		}
-	})
-	updateState(device_address, 'waiting_for_confirmations')
-}
-
 function readCurrentState(device_address, handleState){
 	db.query("SELECT state, invite_code FROM states WHERE device_address=?", [device_address], function(rows){
 		if (rows.length > 0)
@@ -255,30 +248,12 @@ function updateState(device_address, state, onDone){
 }
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
-	mutex.lock([device_address], function(device_unlock){
-		db.query("SELECT to_bitcoin_address FROM note_buyer_orders WHERE out_note_address=?", [out_note_address], function(rows){
-			if (rows.length > 0){ // already know this note address
-				device_unlock()
-				return handleBitcoinAddress(rows[0].to_bitcoin_address);
-			}
-			// generate new address
-			mutex.lock(["new_bitcoin_address"], function(unlock){
-				client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
-					if (err)
-						throw Error(err);
-					console.log('BTC Address:', to_bitcoin_address);
-					db.query(
-						"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
-						(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
-						[device_address, out_note_address, to_bitcoin_address],
-						function(){
-							unlock();
-							device_unlock();
-							handleBitcoinAddress(to_bitcoin_address);
-						}
-					);
-				});
-			});
+	mutex.lock(["new_bitcoin_address"], function(unlock){
+		client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
+			if (err)
+				throw Error(err);
+			console.log('BTC Address:', to_bitcoin_address);
+			handleBitcoinAddress(to_bitcoin_address);
 		});
 	});
 }
@@ -415,10 +390,14 @@ eventBus.on('text', function(from_address, text){
 			var out_note_address = arrMatches[1];
 			assignOrReadDestinationBitcoinAddress(from_address, out_note_address, function(to_bitcoin_address){
 				instant.getBuyRate(function(buy_price){
-					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
-					recordUserOrder(from_address, to_bitcoin_address, out_note_address, invite_code)
+					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
 				});
 				updateState(from_address, 'waiting_for_payment');
+				postTranferResult(from_address, null, null, null, out_note_address, invite_code, function(error, statusCode, body){
+					if(error) {
+						notifications.notifyAdmin('Error: ' + error +'\nStatusCode: '+ statusCode)
+					}
+				})
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
 			});
 			return;
