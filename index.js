@@ -324,7 +324,7 @@ function updateConfirm(from_address, to_bitcoin_address, amount, rate) {
 	})
 }
 
-setInterval(checkSolvency, 10000);
+// setInterval(checkSolvency, 10000);
 
 var bHeadlessWalletReady = false;
 eventBus.once('headless_wallet_ready', function(){
@@ -345,7 +345,7 @@ eventBus.on('paired', function(from_address){
 		if (state === 'waiting_for_confirmations')
 			return device.sendMessageToDevice(from_address, 'text', "Received your payment and waiting that it is confirmed.");
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to exchange serivce, click [buy](command:buy) to buy TTT");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy] to proceed");
 	});
 });
 
@@ -377,7 +377,7 @@ eventBus.on('text', function(from_address, text){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
-			device.sendMessageToDevice(from_address, 'text', "Please input your invite_code or click [skip](command:skip).");
+			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:skip) to continue.");
 			return;
 		}
 
@@ -405,7 +405,7 @@ eventBus.on('text', function(from_address, text){
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
 			instant.getBuyRate(function(rates){
-				device.sendMessageToDevice(from_address, 'text', "You can:buy notes at "+ rates +" BTC/MN.\nPlease let me know your address (just click \"...\" button and select \"Insert my address\"");
+				device.sendMessageToDevice(from_address, 'text', "List price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
@@ -418,7 +418,9 @@ eventBus.on('text', function(from_address, text){
 				instant.getBuyRate(function(buy_price){
 					var will_do_text = 'Your bitcoins will be added to the [book](command:book) at '+buy_price+' BTC/MN when the payment has at least '+MIN_CONFIRMATIONS+' confirmations.'
 					var maximum_text = buy_price ? "" : "maximum amount is "+instant.MAX_BTC+" BTC,";
-					device.sendMessageToDevice(from_address, 'text', "Got it, you'll receive your notes to "+out_note_address+".  Now please pay BTC to "+to_bitcoin_address+".  We'll exchange as much as you pay, but the "+maximum_text+" minimum is "+(MIN_SATOSHIS/1e8)+" BTC (if you send less, it'll be considered a donation).  "+will_do_text);
+					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n\n\
+					1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n\n\
+					2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
 					recordUserOrder(from_address, to_bitcoin_address, out_note_address, invite_code)
 				});
 				updateState(from_address, 'waiting_for_payment');
@@ -427,11 +429,11 @@ eventBus.on('text', function(from_address, text){
 			return;
 		}
 		else if (state === 'waiting_for_trustnote_address')
-			return device.sendMessageToDevice(from_address, 'text', "This doesn't look like a valid note address.  Please click \"...\" button at the bottom of the screen and select \"Insert my address\", then hit \"Send\" button.");
+			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:buy) to try it again");
 		
 		switch(state){
 			case 'greeting':
-				device.sendMessageToDevice(from_address, 'text', "To start an exchange, see the current [rates](command:rates).");
+				device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy] to proceed.");
 				break;
 				
 			case 'waiting_for_payment':
@@ -447,7 +449,7 @@ eventBus.on('text', function(from_address, text){
 				break;
 				
 			default:
-				throw Error("unknown state: "+state);
+				device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:buy) to try it again")
 		}
 	});
 });
