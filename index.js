@@ -255,27 +255,18 @@ function updateState(device_address, state, onDone){
 }
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_byteball_address, handleBitcoinAddress){
-	mutex.lock([device_address], function(device_unlock){
-		db.query("SELECT to_bitcoin_address FROM note_buyer_orders WHERE out_note_address=?", [out_byteball_address], function(rows){
-			// generate new address
-			mutex.lock(["new_bitcoin_address"], function(unlock){
-				client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
-					if (err)
-						throw Error(err);
-					console.log('BTC Address:', to_bitcoin_address);
-					db.query(
-						"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
-						(device_address, out_byteball_address, to_bitcoin_address) VALUES (?,?,?)", 
-						[device_address, out_byteball_address, to_bitcoin_address],
-						function(){
-							unlock();
-							device_unlock();
-							handleBitcoinAddress(to_bitcoin_address);
-						}
-					);
-				});
-			});
-		});
+	client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
+		if (err)
+			throw Error(err);
+		console.log('BTC Address:', to_bitcoin_address);
+		db.query(
+			"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
+			(device_address, out_byteball_address, to_bitcoin_address) VALUES (?,?,?)", 
+			[device_address, out_byteball_address, to_bitcoin_address],
+			function(){
+				handleBitcoinAddress(to_bitcoin_address);
+			}
+		);
 	});
 }
 
