@@ -254,15 +254,15 @@ function updateState(device_address, state, onDone){
 	});
 }
 
-function assignOrReadDestinationBitcoinAddress(device_address, out_byteball_address, handleBitcoinAddress){
+function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
 	client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
 		if (err)
 			throw Error(err);
 		console.log('BTC Address:', to_bitcoin_address);
 		db.query(
 			"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
-			(device_address, out_byteball_address, to_bitcoin_address) VALUES (?,?,?)", 
-			[device_address, out_byteball_address, to_bitcoin_address],
+			(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
+			[device_address, out_note_address, to_bitcoin_address],
 			function(){
 				handleBitcoinAddress(to_bitcoin_address);
 			}
