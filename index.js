@@ -256,7 +256,7 @@ function updateState(device_address, state, onDone){
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_byteball_address, handleBitcoinAddress){
 	mutex.lock([device_address], function(device_unlock){
-		db.query("SELECT to_bitcoin_address FROM note_buyer_bindings WHERE out_note_address=?", [out_byteball_address], function(rows){
+		db.query("SELECT to_bitcoin_address FROM note_buyer_orders WHERE out_note_address=?", [out_byteball_address], function(rows){
 			// generate new address
 			mutex.lock(["new_bitcoin_address"], function(unlock){
 				client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
