@@ -264,7 +264,7 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_byteball_addr
 						throw Error(err);
 					console.log('BTC Address:', to_bitcoin_address);
 					db.query(
-						"INSERT "+db.getIgnore()+" INTO byte_buyer_bindings \n\
+						"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
 						(device_address, out_byteball_address, to_bitcoin_address) VALUES (?,?,?)", 
 						[device_address, out_byteball_address, to_bitcoin_address],
 						function(){
