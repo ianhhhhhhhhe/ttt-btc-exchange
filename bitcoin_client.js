@@ -4,7 +4,7 @@ var bitcoin = require('bitcoin');
 
 var client = new bitcoin.Client({
 	host: 'localhost',
-	port: 18332,
+	port: 28332,
 	user: 'bitcoin',
 	pass: 'local321',
 	timeout: 60000
