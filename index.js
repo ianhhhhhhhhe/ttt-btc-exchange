@@ -233,7 +233,7 @@ function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
 				})
 		}
 	})
-	updateState(from_address, 'waiting_for_confirmations')
+	updateState(device_address, 'waiting_for_confirmations')
 }
 
 function readCurrentState(device_address, handleState){
@@ -432,7 +432,7 @@ eventBus.on('text', function(from_address, text){
 		
 		switch(state){
 			case 'greeting':
-				device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy] to proceed.");
+				device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy) to proceed.");
 				break;
 				
 			case 'waiting_for_payment':
