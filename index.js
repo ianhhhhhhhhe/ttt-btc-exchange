@@ -373,6 +373,7 @@ eventBus.on('text', function(from_address, text){
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
 					if(error) throw Error(error)
+					console.log('===POST===, statusCode: '+statusCode+' res: '+body)
 				})
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
 			});
