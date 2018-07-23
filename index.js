@@ -82,8 +82,11 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 		'inviteCode': invite_code
 	}
 	request({
-		url: '10.10.10.163/exchange-order/save-order.htm',
+		url: 'http://10.10.10.163:8080/exchange-order/save-order.htm',
 		method: 'POST',
+		headers:{
+            Referer: '10.10.10.163:8080'
+        }
 		body: JSON.stringify(json)
 	}, (error, response, body) => {
 		if (error){
