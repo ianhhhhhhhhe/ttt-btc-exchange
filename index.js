@@ -229,6 +229,17 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 	})
 }
 
+function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
+	db.query('select * from note_buyer_orders where device_address=?', [device_address], function(rows){
+		if(rows.length===0){
+			db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
+				device_address) values (?,?,?)', [ttt_address, to_bitcoin_address, device_address], function() {
+				})
+		}
+	})
+	updateState(device_address, 'waiting_for_confirmations')
+}
+
 function readCurrentState(device_address, handleState){
 	db.query("SELECT state, invite_code FROM states WHERE device_address=?", [device_address], function(rows){
 		if (rows.length > 0)
@@ -253,7 +264,16 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_note_address,
 			if (err)
 				throw Error(err);
 			console.log('BTC Address:', to_bitcoin_address);
-			handleBitcoinAddress(to_bitcoin_address);
+			db.query(
+				"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
+				(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
+				[device_address, out_note_address, to_bitcoin_address],
+				function(){
+					unlock();
+					device_unlock();
+					handleBitcoinAddress(to_bitcoin_address);
+				}
+			);
 		});
 	});
 }
@@ -391,6 +411,7 @@ eventBus.on('text', function(from_address, text){
 			assignOrReadDestinationBitcoinAddress(from_address, out_note_address, function(to_bitcoin_address){
 				instant.getBuyRate(function(buy_price){
 					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
+					recordUserOrder(from_address, to_bitcoin_address, out_note_address, invite_code)
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, null, null, null, out_note_address, invite_code, function(error, statusCode, body){
