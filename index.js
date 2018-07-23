@@ -320,7 +320,7 @@ eventBus.on('paired', function(from_address){
 		if (state === 'waiting_for_confirmations')
 			return device.sendMessageToDevice(from_address, 'text', "Received your payment and waiting that it is confirmed.");
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy] to proceed");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy) to proceed");
 	});
 });
 
