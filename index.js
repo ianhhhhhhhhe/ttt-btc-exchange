@@ -235,8 +235,8 @@ function postUserOrder(device_address, to_bitcoin_address, ttt_address, invite_c
 function recordUserOrder(device_address, to_bitcoin_address, ttt_address) {
 	db.query('insert into note_buyer_orders (out_note_address, to_bitcoin_address,\n\
 		device_address) values (?,?,?)', [ttt_address, to_bitcoin_address, device_address], function() {
+			updateState(device_address, 'waiting_for_confirmations')
 	})
-	updateState(device_address, 'waiting_for_confirmations')
 }
 
 function readCurrentState(device_address, handleState){
