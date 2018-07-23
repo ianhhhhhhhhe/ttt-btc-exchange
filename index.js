@@ -369,7 +369,7 @@ eventBus.on('text', function(from_address, text){
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, null, null, null, out_note_address, invite_code, function(error, statusCode, body){
-					throw Error(error)
+					if(error) throw Error(error)
 				})
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
 			});
