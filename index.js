@@ -270,23 +270,6 @@ function assignOrReadDestinationBitcoinAddress(device_address, out_note_address,
 	});
 }
 
-function getBtcBalance(count_confirmations, handleBalance, counter){
-	client.getBalance('*', count_confirmations, function(err, btc_balance, resHeaders) {
-		if (err){
-			// retry up to 3 times
-			if (counter >= 3)
-				return notifications.notifyAdmin("getBalance "+count_confirmations+" failed: "+err);
-			counter = counter || 0;
-			console.log('getBalance attempt #'+counter+' failed: '+err);
-			setTimeout( () => {
-				getBtcBalance(count_confirmations, handleBalance, counter + 1);
-			}, 60*1000);
-			return;
-		}
-		handleBalance(btc_balance);
-	});
-}
-
 function checkSolvency(){
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
@@ -346,20 +329,6 @@ eventBus.on('text', function(from_address, text){
 		return device.sendMessageToDevice(from_address, 'text', 'hello');
 	}
 	
-	if (headlessWallet.isControlAddress(from_address)){
-		if (lc_text === 'balance') {
-			return getBtcBalance(0, function(balance) {
-				return getBtcBalance(1, function(confirmed_balance) {
-					var unconfirmed_balance = balance - confirmed_balance;
-					var btc_balance_str = balance+' BTC';
-					if (unconfirmed_balance)
-						btc_balance_str += ' ('+unconfirmed_balance+' unconfirmed)';
-					device.sendMessageToDevice(from_address, 'text', btc_balance_str+'\n');
-				});
-			});
-		}
-	}
-	
 	readCurrentState(from_address, function(state, invite_code){
 		console.log('state='+state);
 		
@@ -407,9 +376,7 @@ eventBus.on('text', function(from_address, text){
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, null, null, null, out_note_address, invite_code, function(error, statusCode, body){
-					if(error) {
-						notifications.notifyAdmin('Error: ' + error +'\nStatusCode: '+ statusCode)
-					}
+					throw Error(error)
 				})
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
 			});
