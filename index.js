@@ -35,6 +35,9 @@ function payToAddress(args, callback) {
 			return callback('Not Enough Fund')
 		}
 		createPayment.createPayment(address, amount, function(res){
+			db.query('select device_address from note_buyer_orders where out_note_address=?', [address], function(rows){
+				device.sendMessageToDevice(rows[0].device_address, 'text', 'You have successfully purchased '+ amount +' TTT. Please click "WALLET" to view the detail')
+			})
 			callback(res)
 		})
 	})
@@ -67,7 +70,7 @@ function getWalletBalance(callback){
 	});
 }
 
-function postTranferResult(device_address, amount, rate, state, ttt_address, invite_code, callback) {
+function postTranferResult(device_address, ttt_address, to_bitcoin_address, invite_code, callback) {
 	var json = {
 		'tttAddress': ttt_address,
 		'deviceAddress': device_address,
@@ -77,12 +80,12 @@ function postTranferResult(device_address, amount, rate, state, ttt_address, inv
 		'inviteCode': invite_code
 	}
 	request({
-		url: 'https://testactivity.trustnote.org/exchange-order/save-order.htm',
+		url: `https://testactivity.trustnote.org/exchange-order/save-order.htm?currency=TTT&payment=BTC&toAddress=${to_bitcoin_address}
+		&tttAddress=${ttt_address}&deviceAddress=${device_address}&inviteCode=${invite_code}`,
 		method: 'POST',
 		headers:{
             Referer: 'https://testactivity.trustnote.org'
-        },
-		body: JSON.stringify(json)
+        }
 	}, (error, response, body) => {
 		if (error){
 			return callback(error);
@@ -139,7 +142,7 @@ let server = http.createServer((request, response) => {
 			    return payToAddress(args, function(res){
 					if(JSON.stringify(res)=='Not Enough Fund') {
 						content.code = 500
-						content.msg = 'Error'
+						content.msg = 'Not Enough Fund'
 					} else if (JSON.stringify(res)=='Uncorrect Address') {
 						content.code = 501
 						content.msg = 'Uncorrect Address'
@@ -368,7 +371,7 @@ eventBus.on('text', function(from_address, text){
 					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
 				});
 				updateState(from_address, 'waiting_for_payment');
-				postTranferResult(from_address, null, null, null, out_note_address, invite_code, function(error, statusCode, body){
+				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
 					if(error) throw Error(error)
 				})
 				// exchangeService.bus.subscribe('bitcoind/addresstxid', [to_bitcoin_address]);
