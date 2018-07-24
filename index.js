@@ -61,7 +61,7 @@ function getBtcBalanceFromAddress(args, callback) {
 
 function getBtcBalanceFromAddressOfTestnet(args, callback) {
 	let address = args.address
-	client.getreceivedbyaddress(address, 2, function(res){
+	client.getReceivedByAddress(address, 2, function(res){
 		callback(null, null, res)
 	})
 }
