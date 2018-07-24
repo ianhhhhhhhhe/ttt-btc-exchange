@@ -103,6 +103,8 @@ function getTranferResult(args, callback) {
 	let from_address = args.from_address
 	let amount = args.amount
 	let receipt = args.receipt
+	console.log('getTransferResult'+from_address+amount+receipt)
+	const device = require('trustnote-common/device')
 	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ amount +' BTC for ' + receipt +' TTT. Please click "WALLET" to view the detail')
 	return callback(args)
 }
@@ -190,11 +192,11 @@ let server = http.createServer((request, response) => {
 			data += chunk;
 		});
 		request.on('end', function () {
-			console.log(data);
-			content.data = JSON.parse(data)
+			console.log('POST'+data);
+			const resopnse = JSON.parse(data)
 			switch(path){
 				case '/getTransferResult':
-				    return getTranferResult(data, function(res){
+				    return getTranferResult(resopnse, function(res){
 						content.data = res
 						response.write(JSON.stringify(content))
 						response.end()
