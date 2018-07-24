@@ -103,9 +103,10 @@ function getTranferResult(args, callback) {
 	let from_address = args.from_address
 	let amount = args.amount
 	let receipt = args.receipt
+	let rate = args.rate
 	console.log('getTransferResult'+from_address+amount+receipt)
 	const device = require('trustnote-common/device')
-	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ amount +' BTC for ' + receipt +' TTT. Please click "WALLET" to view the detail')
+	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ amount +' BTC for ' + receipt +' MN and the price is: '+ rate +' BTC/TTT.. Please click "WALLET" to view the detail')
 	return callback(args)
 }
 
