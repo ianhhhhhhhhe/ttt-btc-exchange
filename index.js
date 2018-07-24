@@ -85,7 +85,8 @@ function postTranferResult(device_address, ttt_address, to_bitcoin_address, invi
 		url: url,
 		method: 'POST',
 		headers:{
-            Referer: 'https://testactivity.trustnote.org'
+			"Origin": "localhost"
+            "Referer": 'http://localhost:8080'
         }
 	}, (error, response, body) => {
 		if (error){
