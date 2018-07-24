@@ -85,7 +85,7 @@ function postTranferResult(device_address, ttt_address, to_bitcoin_address, invi
 		url: url,
 		method: 'POST',
 		headers:{
-			"Origin": "localhost"
+			"Origin": "localhost",
             "Referer": 'http://localhost:8080'
         }
 	}, (error, response, body) => {
