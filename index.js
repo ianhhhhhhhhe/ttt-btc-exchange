@@ -25,6 +25,7 @@ var wallet;
 function payToAddress(args, callback) {
 	var address = args.address
 	var amount = parseFloat(args.amount)
+	console.log('===payTo: ' + address + " amount: " + amount + '===')
 	if(!ValidationUtils.isValidAddress(address)){
 		return callback('Uncorrect Address')
 	}
