@@ -79,8 +79,7 @@ function getWalletBalance(callback){
 }
 
 function postTranferResult(device_address, ttt_address, to_bitcoin_address, invite_code, callback) {
-	let url = `https://testactivity.trustnote.org/exchange-order/save-order.htm?currency=TTT&payment=BTC&toAddress=${to_bitcoin_address}
-		&tttAddress=${ttt_address}&deviceAddress=${device_address}&inviteCode=${invite_code}`
+	let url = `https://testactivity.trustnote.org/exchange-order/save-order.htm?currency=TTT&payment=BTC&toAddress=${to_bitcoin_address}&tttAddress=${ttt_address}&deviceAddress=${device_address}&inviteCode=${invite_code}`
 	console.log(url)
 	request({
 		url: url,
