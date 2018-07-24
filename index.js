@@ -59,6 +59,13 @@ function getBtcBalanceFromAddress(args, callback) {
 	})
 }
 
+function getBtcBalanceFromAddressOfTestnet(args, callback) {
+	let address = args.address
+	client.getreceivedbyaddress(address, 2, function(res){
+		callback(null, null, res)
+	})
+}
+
 function getWalletBalance(callback){
 	var Wallet = require('trustnote-common/wallet.js');
 	Wallet.readBalance(wallet, function(assocBalances){
@@ -123,6 +130,17 @@ let server = http.createServer((request, response) => {
 		switch (path) {
 			case '/getBtcBalance':
 				return getBtcBalanceFromAddress(args, function(error, status_code, body){
+					content.data = body
+					if(error) {
+						content.detailMsg = JSON.stringify(error)
+						content.msg = 'Failed'
+					}
+					content.code = status_code ? status_code : 200
+					response.write(JSON.stringify(content))
+					response.end();
+				})
+			case '/getBtcBalanceFromTestnet':
+				return getBtcBalanceFromAddressOfTestnet(args, function(error, status_code, body){
 					content.data = body
 					if(error) {
 						content.detailMsg = JSON.stringify(error)
@@ -250,20 +268,20 @@ function updateState(device_address, state, onDone){
 
 function assignOrReadDestinationBitcoinAddress(device_address, out_note_address, handleBitcoinAddress){
 	mutex.lock(["new_bitcoin_address"], function(unlock){
-	client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
-		if (err)
-			throw Error(err);
-		console.log('BTC Address:', to_bitcoin_address);
-		db.query(
-			"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
-			(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
-			[device_address, out_note_address, to_bitcoin_address],
-			function(){
-					unlock()
-				handleBitcoinAddress(to_bitcoin_address);
-			}
-		);
-	});
+		client.getNewAddress(function(err, to_bitcoin_address, resHeaders) {
+			if (err)
+				throw Error(err);
+			console.log('BTC Address:', to_bitcoin_address);
+			db.query(
+				"INSERT "+db.getIgnore()+" INTO note_buyer_orders \n\
+				(device_address, out_note_address, to_bitcoin_address) VALUES (?,?,?)", 
+				[device_address, out_note_address, to_bitcoin_address],
+				function(){
+						unlock()
+					handleBitcoinAddress(to_bitcoin_address);
+				}
+			);
+		});
 	})
 }
 
