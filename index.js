@@ -24,7 +24,7 @@ var wallet;
 
 function payToAddress(args, callback) {
 	var address = args.address
-	var amount = args.amount
+	var amount = parseFloat(args.amount)
 	if(!ValidationUtils.isValidAddress(address)){
 		return callback('Uncorrect Address')
 	}
@@ -85,8 +85,8 @@ function postTranferResult(device_address, ttt_address, to_bitcoin_address, invi
 		url: url,
 		method: 'POST',
 		headers:{
-			"Origin": "localhost",
-            "Referer": 'http://localhost:8080'
+			"Origin": "https://testactivity.trustnote.org",
+            "Referer": "localhost"
         }
 	}, (error, response, body) => {
 		if (error){
