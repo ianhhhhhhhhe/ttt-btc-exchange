@@ -84,7 +84,7 @@ function postTranferResult(device_address, ttt_address, to_bitcoin_address, invi
 	console.log(url)
 	request({
 		url: url,
-		method: 'POST',
+		method: 'GET',
 		headers:{
 			"Origin": "https://testactivity.trustnote.org",
             "Referer": "localhost"
@@ -421,3 +421,5 @@ eventBus.on('text', function(from_address, text){
 		}
 	});
 });
+
+exports.postTranferResult = postTranferResult
