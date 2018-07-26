@@ -326,10 +326,8 @@ eventBus.once('headless_wallet_ready', function(){
 eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
 		var device = require('trustnote-common/device');
-		if (state === 'waiting_for_confirmations')
-			return device.sendMessageToDevice(from_address, 'text', "Received your payment and waiting that it is confirmed.");
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy) to proceed");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please enter or click [BUY](command:buy) to buy");
 	});
 });
 
@@ -352,12 +350,12 @@ eventBus.on('text', function(from_address, text){
 		}
 
 		if (lc_text === 'skip') {
-			updateInviteCode(from_address, '00000000')
+			updateInviteCode(from_address, null)
 			instant.getBuyRate(function(rates, error){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
+				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
 			})
 			return;
 		}
@@ -383,7 +381,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
+				device.sendMessageToDevice(from_address, 'text', "Current price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
@@ -397,7 +395,7 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
+					device.sendMessageToDevice(from_address, 'text', "Please pay BTC to the address:\n"+to_bitcoin_address+".\n\nWe will exchange TTT according to the BTC you paid. After the successful payment of BTC, you will need to transfer TTT to your wallet after review and send a message to you. Please check it.\n\nPrecautions:\n1. The actual price will be based on the price at the time of payment and may differ from the current price;\n2. The address is only allowed to be paid once, and the BTC that is paid multiple times will not be refunded. We will consider it a donation.");
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){

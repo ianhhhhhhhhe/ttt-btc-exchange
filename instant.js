@@ -31,6 +31,7 @@ function getBuyRate(callback){
 			return callback(buy);
 		} else {
 			notifications.notifyAdmin('Cannot get ', rate_url)
+			return callback(null, '404')
 		}
 	});
 }
