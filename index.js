@@ -391,7 +391,7 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Please pay BTC to the address:\n"+to_bitcoin_address+".\n\nWe will exchange TTT according to the BTC you paid. After the successful payment of BTC, you will need to transfer TTT to your wallet after review and send a message to you. Please check it.\n\nPrecautions:\n1. The actual price will be based on the price at the time of payment and may differ from the current price;\n2.Minimum is 0.1 BTC;\n3. The address is only allowed to be paid once, and the BTC that is paid multiple times will not be refunded. We will consider it a donation.");
+					device.sendMessageToDevice(from_address, 'text', "Please pay BTC to the address:\n"+to_bitcoin_address+".\n\nWe will exchange TTT according to the BTC you paid. After the successful payment of BTC, you will need to transfer TTT to your wallet after review and send a message to you. Please check it.\n\nPrecautions:\n1. The actual price will be based on the price at the time of payment and may differ from the current price;\n2.Minimum is 0.01 BTC;\n3. The address is only allowed to be paid once, and the BTC that is paid multiple times will not be refunded. We will consider it a donation.");
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
