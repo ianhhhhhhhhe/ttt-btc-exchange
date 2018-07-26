@@ -157,10 +157,10 @@ let server = http.createServer((request, response) => {
 				})
 			case '/payToAddress':
 			    return payToAddress(args, function(res){
-					if(JSON.stringify(res)=='Not Enough Fund') {
+					if(JSON.stringify(res)== JSON.stringify('Not Enough Fund')) {
 						content.code = 500
 						content.msg = 'Not Enough Fund'
-					} else if (JSON.stringify(res)=='Uncorrect Address') {
+					} else if (JSON.stringify(res)==JSON.stringify('Uncorrect Address')) {
 						content.code = 501
 						content.msg = 'Uncorrect Address'
 					} else {
@@ -353,14 +353,20 @@ eventBus.on('text', function(from_address, text){
 
 		if (lc_text === 'skip') {
 			updateInviteCode(from_address, '00000000')
-			instant.getBuyRate(function(rates){
+			instant.getBuyRate(function(rates, error){
+				if(error) {
+					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+				}
 				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
 
 		if (lc_text === 'rates' || lc_text === 'rate'){
-			instant.getBuyRate(function(rates){ 
+			instant.getBuyRate(function(rates, error){
+				if(error) {
+					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+				}
 				device.sendMessageToDevice(from_address, 'text', "You can: buy notes at "+ rates +" BTC/MN.");
 			})
 			return;
@@ -373,7 +379,10 @@ eventBus.on('text', function(from_address, text){
 		var arrMatches = text.match(/\b([A-Z0-9]{12})\b/);
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
-			instant.getBuyRate(function(rates){
+			instant.getBuyRate(function(rates, error){
+				if(error) {
+					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+				}
 				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
@@ -384,7 +393,10 @@ eventBus.on('text', function(from_address, text){
 		if (bValidnoteAddress){ // new BB address: create or update binding
 			var out_note_address = arrMatches[1];
 			assignOrReadDestinationBitcoinAddress(from_address, out_note_address, function(to_bitcoin_address){
-				instant.getBuyRate(function(buy_price){
+				instant.getBuyRate(function(buy_price, error){
+					if(error) {
+						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+					}
 					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
 				});
 				updateState(from_address, 'waiting_for_payment');
@@ -399,26 +411,7 @@ eventBus.on('text', function(from_address, text){
 		else if (state === 'waiting_for_trustnote_address')
 			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:buy) to try it again");
 		
-		switch(state){
-			case 'greeting':
-				device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click [BUY](command:buy) to proceed.");
-				break;
-				
-			case 'waiting_for_payment':
-				device.sendMessageToDevice(from_address, 'text', "Waiting for your payment.  If you want to start another exchange, see the current [rates](command:rates).");
-				break;
-
-			case 'waiting_for_confirmations':
-				device.sendMessageToDevice(from_address, 'text', "Received your payment and waiting that it is confirmed.");
-				break;
-				
-			case 'done':
-				device.sendMessageToDevice(from_address, 'text', "If you want to start another exchange, see the current [rates](command:rates).");
-				break;
-				
-			default:
-				device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:buy) to try it again")
-		}
+		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:buy) to try it again")
 	});
 });
 
