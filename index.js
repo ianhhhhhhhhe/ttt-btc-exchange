@@ -36,10 +36,6 @@ function payToAddress(args, callback) {
 			return callback('Not Enough Fund')
 		}
 		createPayment.createPayment(address, amount, function(res){
-			db.query('select device_address from note_buyer_orders where out_note_address=?', [address], function(rows){
-				const device = require('trustnote-common/device')
-				device.sendMessageToDevice(rows[0].device_address, 'text', 'You have successfully purchased '+ amount +' TTT. Please click "WALLET" to view the detail')
-			})
 			callback(res)
 		})
 	})
@@ -106,7 +102,7 @@ function getTranferResult(args, callback) {
 	let rate = args.rate
 	console.log('getTransferResult'+from_address+amount+receipt)
 	const device = require('trustnote-common/device')
-	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ amount +' BTC for ' + receipt +' MN and the price is: '+ rate +' BTC/TTT.. Please click "WALLET" to view the detail')
+	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ receipt +' BTC for ' + amount +' MN and the price is: '+ rate +' BTC/TTT.. Please click "WALLET" to view the detail')
 	return callback(args)
 }
 
@@ -327,7 +323,7 @@ eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please enter or click [BUY](command:buy) to buy");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please enter or click [BUY](command:BUY) to buy");
 	});
 });
 
@@ -345,7 +341,7 @@ eventBus.on('text', function(from_address, text){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
-			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:skip) to continue.");
+			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
 			return;
 		}
 
@@ -374,7 +370,7 @@ eventBus.on('text', function(from_address, text){
 			return device.sendMessageToDevice(from_address, 'text', "List of commands:\n\n\
 			[buy](command:buy): send a order\n");
 
-		var arrMatches = text.match(/\b([A-Z0-9]{12})\b/);
+		var arrMatches = text.match(/\b([A-Z0-9]{6})\b/);
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
 			instant.getBuyRate(function(rates, error){
@@ -407,9 +403,9 @@ eventBus.on('text', function(from_address, text){
 			return;
 		}
 		else if (state === 'waiting_for_trustnote_address')
-			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:buy) to try it again");
+			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:BUY) to try it again");
 		
-		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:buy) to try it again")
+		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:BUY) to try it again")
 	});
 });
 
