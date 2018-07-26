@@ -370,7 +370,7 @@ eventBus.on('text', function(from_address, text){
 			return device.sendMessageToDevice(from_address, 'text', "List of commands:\n\n\
 			[buy](command:buy): send a order\n");
 
-		var arrMatches = text.match(/\b([A-Z2-7]{6})\b/);
+		var arrMatches = text.match(/\b([a-zA-Z2-7]{6})\b/);
 		if (arrMatches) {
 			updateInviteCode(from_address, arrMatches[0])
 			instant.getBuyRate(function(rates, error){
