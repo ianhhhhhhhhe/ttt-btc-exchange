@@ -102,7 +102,7 @@ function getTranferResult(args, callback) {
 	let rate = args.rate
 	console.log('getTransferResult'+from_address+amount+receipt)
 	const device = require('trustnote-common/device')
-	device.sendMessageToDevice(from_address, 'text', 'You have successfully purchased '+ receipt +' BTC for ' + amount +' MN and the price is: '+ rate +' BTC/TTT.. Please click "WALLET" to view the detail')
+	device.sendMessageToDevice(from_address, 'text', 'You paid '+ receipt +' BTC for ' + amount +' MN and the price is: '+ rate +' BTC/TTT. Please click "WALLET" to view the detail')
 	return callback(args)
 }
 
@@ -403,9 +403,9 @@ eventBus.on('text', function(from_address, text){
 			return;
 		}
 		else if (state === 'waiting_for_trustnote_address')
-			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:BUY) to try it again");
+			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:BUY) to re-purchase");
 		
-		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:BUY) to try it again")
+		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:BUY) to re-purchase")
 	});
 });
 
