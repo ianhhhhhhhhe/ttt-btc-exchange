@@ -341,20 +341,7 @@ eventBus.on('text', function(from_address, text){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
-			db.query('select invite_code from states where device_address=?', [from_address], function(rows){
-				if(rows.length==0) {
-					device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
-				} else {
-					instant.getBuyRate(function(rates, error){
-				if(error) {
-					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
-				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
-			})
-			return;
-				}
-			})
-			
+			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
 			return;
 		}
 
