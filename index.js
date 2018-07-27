@@ -323,7 +323,7 @@ eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please enter or click [BUY](command:BUY) to buy");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed");
 	});
 });
 
@@ -346,12 +346,12 @@ eventBus.on('text', function(from_address, text){
 					device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
 				} else {
 					instant.getBuyRate(function(rates, error){
-						if(error) {
-							return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
-						}
-						device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
-					})
-					return;
+				if(error) {
+					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+				}
+				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
+			})
+			return;
 				}
 			})
 			
@@ -364,7 +364,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
+				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
 			})
 			return;
 		}
