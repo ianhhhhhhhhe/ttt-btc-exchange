@@ -345,7 +345,13 @@ eventBus.on('text', function(from_address, text){
 				if(rows.length==0) {
 					device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
 				} else {
-					device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
+					instant.getBuyRate(function(rates, error){
+						if(error) {
+							return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
+						}
+						device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send your TTT payment address (click on the bottom left corner +, insert address) to start purchasing TTT");
+					})
+					return;
 				}
 			})
 			
