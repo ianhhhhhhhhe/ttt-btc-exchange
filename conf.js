@@ -10,7 +10,7 @@ exports.bIgnoreUnpairRequests = true;
 exports.storage = 'sqlite';
 
 
-exports.hub = '119.28.44.246:6616';
+exports.hub = 'victor.trustnote.org/tn';
 exports.deviceName = 'exchange';
 exports.permanent_pairing_secret = '0000';
 exports.control_addresses = ['DEVICE ALLOWED TO CHAT'];
