@@ -381,7 +381,7 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address: "+to_bitcoin_address+".\n支付BTC到该地址："+to_bitcoin_address+"\n\nNote:\n注意事项：\n1.We will exchange as much as you pay\n1.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation\n3.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.\n4.该地址只允许支付一次，多次支付将不予返还；");
+					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address: "+to_bitcoin_address+"\n支付BTC到该地址："+to_bitcoin_address+"\n\nNote:\n注意事项：\n1.We will exchange as much as you pay\n1.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation\n3.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.\n4.该地址只允许支付一次，多次支付将不予返还；");
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
