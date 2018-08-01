@@ -102,7 +102,7 @@ function getTranferResult(args, callback) {
 	let rate = args.rate
 	console.log('getTransferResult'+from_address+amount+receipt)
 	const device = require('trustnote-common/device')
-	device.sendMessageToDevice(from_address, 'text', 'You paid '+ receipt +' BTC for ' + amount +' MN and the price is: '+ rate +' BTC/TTT. Please click "WALLET" to view the detail')
+	device.sendMessageToDevice(from_address, 'text', 'You paid '+ receipt +' BTC for ' + amount +' MN and the price is: '+ rate +' BTC/TTT. Please click "WALLET" to view the detail\n本次支付'+ receipt +'BTC，价格'+ rate +'BTC/TTT，兑换' + amount +'TTT')
 	return callback(args)
 }
 
@@ -323,7 +323,7 @@ eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
 	});
 });
 
@@ -341,7 +341,7 @@ eventBus.on('text', function(from_address, text){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
-			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
+			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.\n输入邀请码或点击[跳过](command:SKIP)继续");
 			return;
 		}
 
@@ -351,17 +351,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
-			})
-			return;
-		}
-
-		if (lc_text === 'rates' || lc_text === 'rate'){
-			instant.getBuyRate(function(rates, error){
-				if(error) {
-					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
-				}
-				device.sendMessageToDevice(from_address, 'text', "You can: buy notes at "+ rates +" BTC/MN.");
+				device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +" BTC/TTT\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n当前价格："+ rates +"BTC/TTT（每十分钟更新），请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 			})
 			return;
 		}
@@ -377,7 +367,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Last price: "+ rates +" BTC/TTT\nPlease send the TrustNote address (click the '+' sign on the lower left to insert your address) to buy TTT");
+				device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +" BTC/TTT\n当前价格："+ rates +"BTC/TTT（每十分钟更新）\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 			})
 			return;
 		}
@@ -391,7 +381,7 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Please send Bitcoin to address:\n"+to_bitcoin_address+".\n\nAfter receiving your Bitcoin, we will send your TTTs instantly. Please check the message from your wallet for notification.\n\nNote:\n1. The actual price paid will be the market price when the Bitcoin is received, which may be different to the list price when the Bitcoin was sent;\n2.Minimum is 0.01 BTC\n3. This address will take one payment only, additional payments will be treated as donations and therefore won't be refunded or converted into TTT.");
+					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address:"+to_bitcoin_address+".\n支付BTC到该地址："+to_bitcoin_address+"\n\nNote:\n注意事项：\n1.We will exchange as much as you pay\n1.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation\n.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.\n4.该地址只允许支付一次，多次支付将不予返还；");
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
@@ -403,9 +393,9 @@ eventBus.on('text', function(from_address, text){
 			return;
 		}
 		else if (state === 'waiting_for_trustnote_address')
-			return device.sendMessageToDevice(from_address, 'text', "The wallet address you entered is not in the correct format. Please re-enter or click [BUY](command:BUY) to re-purchase");
+			return device.sendMessageToDevice(from_address, 'text', "Address form isn't correct. Re-enter or click [BUY](command:BUY) to try it again\n地址不正确，请重新输入或点击[BUY](command:BUY)进行购买");
 		
-		device.sendMessageToDevice(from_address, 'text', "The information you entered is not recognizable. Please re-enter or click [BUY](command:BUY) to re-purchase")
+		device.sendMessageToDevice(from_address, 'text', "The information is not recognizable. Re-enter or click [BUY](command:BUY) to try it again\n错误信息，请重新输入或点击[BUY](command:BUY)进行购买")
 	});
 });
 
