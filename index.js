@@ -364,7 +364,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 			})
 			return;
 		}
@@ -380,7 +380,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 			})
 			return;
 		}
