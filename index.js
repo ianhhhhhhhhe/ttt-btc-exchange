@@ -306,6 +306,8 @@ function updateConfirm(from_address, to_bitcoin_address, amount, rate) {
 
 // setInterval(checkSolvency, 10000);
 
+
+
 var bHeadlessWalletReady = false;
 eventBus.once('headless_wallet_ready', function(){
 	if (!conf.admin_email || !conf.from_email){
@@ -331,6 +333,17 @@ eventBus.on('text', function(from_address, text){
 	var device = require('trustnote-common/device');
 	text = text.trim();
 	var lc_text = text.toLowerCase();
+
+	function getUserLang(from_address, callback) {
+		db.query('select lang from states where device_address=?', [from_address], function(rows) {
+			if (rows.length===0) {
+				notifications.notifyAdmin('Someone\'s language is not stored')
+				device.sendMessageToDevice(from_address, 'text', 'Please choose language first')
+			}
+			let lang = rows[0].lang
+			callback(lang)
+		})
+	}
 
 	if(lc_text == 'hello') {
 		updateState(from_address, 'greeting');
@@ -367,7 +380,7 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +" BTC/TTT\n当前价格："+ rates +"BTC/TTT（每十分钟更新）\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 			})
 			return;
 		}
@@ -381,7 +394,7 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address: "+to_bitcoin_address+"\n支付BTC到该地址："+to_bitcoin_address+"\n\nNote:\n注意事项：\n1.We will exchange as much as you pay\n1.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation\n3.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.\n4.该地址只允许支付一次，多次支付将不予返还；");
+					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address支付BTC到该地址: "+to_bitcoin_address+"\n\nNote注意事项：\n1.We will exchange as much as you pay.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.该地址只允许支付一次，多次支付将不予返还；");
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
