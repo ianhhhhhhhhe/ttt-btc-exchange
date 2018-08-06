@@ -19,7 +19,7 @@ let url = require('url')
 
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
-const langs = ["cn", "en"]
+const langs = ["中文", "en"]
 
 var wallet;
 
@@ -327,7 +327,7 @@ eventBus.on('paired', function(from_address){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
 		// device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
-		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please select your language:\n\n[English](command:en)\n[Chinese](command:cn)\n")
+		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please select your language:\n\n--[English](command:en)\n--[中文](command:中文)\n")
 	});
 });
 
