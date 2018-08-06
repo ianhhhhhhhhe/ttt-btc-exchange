@@ -327,7 +327,7 @@ eventBus.on('paired', function(from_address){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
 		// device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
-		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, please choose your language:\n\n[English](command:en)\n[Chinese](command:cn)\n")
+		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please select your language:\n\n[English](command:en)\n[Chinese](command:cn)\n")
 	});
 });
 
@@ -348,7 +348,14 @@ eventBus.on('text', function(from_address, text){
 	}
 
 	if(langs.indexOf(lc_text) >= 0) {
-		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {})
+		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {
+			switch(lang){
+				case "cn":
+					return device.sendMessageToDevice(from_address, 'text', '请点击[购买](command:BUY)进行购买');
+				default:
+					return device.sendMessageToDevice(from_address, 'text', 'Click "[BUY](command:BUY)" to proceed');
+			}
+		})
 		return
 	}
 
