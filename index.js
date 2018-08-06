@@ -19,6 +19,7 @@ let url = require('url')
 
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
+const langs = ["cn", "en"]
 
 var wallet;
 
@@ -344,6 +345,11 @@ eventBus.on('text', function(from_address, text){
 			let lang = rows[0].lang
 			callback(lang)
 		})
+	}
+
+	if(langs.indexOf(lc_text) >= 0) {
+		db.query("update set lang=? where device_address=?", [lc_text, from_address],() => {})
+		return
 	}
 
 	if(lc_text == 'hello' || lc_text == "你好") {
