@@ -325,7 +325,8 @@ eventBus.on('paired', function(from_address){
 	readCurrentState(from_address, function(state){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
-		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
+		// device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
+		device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, please choose your language: [English](command:en)\n[Chinese](command:cn)\n")
 	});
 });
 
@@ -345,16 +346,31 @@ eventBus.on('text', function(from_address, text){
 		})
 	}
 
-	if(lc_text == 'hello') {
+	if(lc_text == 'hello' || lc_text == "你好") {
 		updateState(from_address, 'greeting');
-		return device.sendMessageToDevice(from_address, 'text', 'hello');
+		getUserLang(from_address, function(lang){
+			switch(lang){
+				case "cn":
+					return device.sendMessageToDevice(from_address, 'text', '你好');
+				default:
+					return device.sendMessageToDevice(from_address, 'text', 'hello');
+			}
+		})
+		return;
 	}
 	
 	readCurrentState(from_address, function(state, invite_code){
 		console.log('state='+state);
 		
 		if (lc_text === 'buy') {
-			device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.\n输入邀请码或点击[跳过](command:SKIP)继续");
+			getUserLang(from_address, function(lang){
+				switch(lang){
+					case "cn":
+						return device.sendMessageToDevice(from_address, 'text', "输入邀请码或点击[跳过](command:SKIP)继续");
+					default:
+						return device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
+				}
+			})
 			return;
 		}
 
@@ -364,14 +380,17 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+				getUserLang(from_address, function(lang){
+					switch(lang){
+						case "cn":
+							return device.sendMessageToDevice(from_address, 'text', "当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+						default:
+							return device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +"BTC/TTT\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")");
+					}
+				})
 			})
 			return;
 		}
-
-		if (lc_text === 'help')
-			return device.sendMessageToDevice(from_address, 'text', "List of commands:\n\n\
-			[buy](command:buy): send a order\n");
 
 		var arrMatches = text.match(/\b([a-zA-Z0-9]{6})\b/);
 		if (arrMatches) {
@@ -380,7 +399,14 @@ eventBus.on('text', function(from_address, text){
 				if(error) {
 					return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 				}
-				device.sendMessageToDevice(from_address, 'text', "Current Rate当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+				getUserLang(from_address, function(lang){
+					switch(lang){
+						case "cn":
+							return device.sendMessageToDevice(from_address, 'text', "当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
+						default:
+							return device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +"BTC/TTT\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")");
+					}
+				})
 			})
 			return;
 		}
@@ -394,7 +420,16 @@ eventBus.on('text', function(from_address, text){
 					if(error) {
 						return device.sendMessageToDevice(from_address, 'text', 'The system is being maintained， please try it later')
 					}
-					device.sendMessageToDevice(from_address, 'text', "Pay BTC to address支付BTC到该地址: "+to_bitcoin_address+"\n\nNote注意事项：\n1.We will exchange as much as you pay.按照实际支付的BTC金额兑换TTT；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.This is only one-off address, additional payments won't be refunded.该地址只允许支付一次，多次支付将不予返还；");
+					getUserLang(from_address, function(lang){
+						switch(lang){
+							case "cn":
+								device.sendMessageToDevice(from_address, 'text', "支付BTC到该地址: "+to_bitcoin_address+"\n\nNote注意事项：\n1.按照实际支付的BTC金额兑换TTT；\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.该地址只允许支付一次，多次支付将不予返还；");
+								break;
+							default:
+								device.sendMessageToDevice(from_address, 'text', "Pay BTC to address: "+to_bitcoin_address+"\n\nNote：\n1.We will exchange as much as you pay；\n2.Your bitcoins will be exchanged when the payment has at least 2 confirmations, at the rate actual for that time, which may differ from the current rate；\n3.The minimum is 0.001 BTC.If you pay less, it'll be considered a donation；\n4.This is only one-off address, additional payments won't be refunded；");
+								break;
+						}
+					})
 				});
 				updateState(from_address, 'waiting_for_payment');
 				postTranferResult(from_address, out_note_address, to_bitcoin_address, invite_code, function(error, statusCode, body){
@@ -405,10 +440,26 @@ eventBus.on('text', function(from_address, text){
 			});
 			return;
 		}
-		else if (state === 'waiting_for_trustnote_address')
-			return device.sendMessageToDevice(from_address, 'text', "Address form isn't correct. Re-enter or click [BUY](command:BUY) to try it again\n地址不正确，请重新输入或点击[BUY](command:BUY)进行购买");
-		
-		device.sendMessageToDevice(from_address, 'text', "The information is not recognizable. Re-enter or click [BUY](command:BUY) to try it again\n错误信息，请重新输入或点击[BUY](command:BUY)进行购买")
+		else if (state === 'waiting_for_trustnote_address'){
+			getUserLang(from_address, function(lang){
+				switch(lang){
+					case "cn":
+						return device.sendMessageToDevice(from_address, 'text', "地址不正确，请重新输入或点击[BUY](command:BUY)进行购买");
+					default:
+						return device.sendMessageToDevice(from_address, 'text', "Address form isn't correct. Re-enter or click [BUY](command:BUY) to try it again");
+				}
+			})
+			return
+		}
+
+		getUserLang(from_address, function(lang){
+			switch(lang){
+				case "cn":
+					return device.sendMessageToDevice(from_address, 'text', "错误信息，请重新输入或点击[BUY](command:BUY)进行购买");
+				default:
+					return device.sendMessageToDevice(from_address, 'text', "The information is not recognizable. Re-enter or click [BUY](command:BUY) to try it again");
+			}
+		})
 	});
 });
 
