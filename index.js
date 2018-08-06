@@ -19,7 +19,7 @@ let url = require('url')
 
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
-const langs = ["中文", "English"]
+const langs = ["中文", "english"]
 
 var wallet;
 
