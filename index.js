@@ -349,7 +349,7 @@ eventBus.on('text', function(from_address, text){
 
 	if(langs.indexOf(lc_text) >= 0) {
 		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {
-			switch(lang){
+			switch(lc_text){
 				case "cn":
 					device.sendMessageToDevice(from_address, 'text', '请点击[购买](command:BUY)进行购买');
 					break;
