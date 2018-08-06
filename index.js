@@ -351,9 +351,11 @@ eventBus.on('text', function(from_address, text){
 		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {
 			switch(lang){
 				case "cn":
-					return device.sendMessageToDevice(from_address, 'text', '请点击[购买](command:BUY)进行购买');
+					device.sendMessageToDevice(from_address, 'text', '请点击[购买](command:BUY)进行购买');
+					break;
 				default:
-					return device.sendMessageToDevice(from_address, 'text', 'Click "[BUY](command:BUY)" to proceed');
+					device.sendMessageToDevice(from_address, 'text', 'Click "[BUY](command:BUY)" to proceed');
+					break
 			}
 		})
 		return
