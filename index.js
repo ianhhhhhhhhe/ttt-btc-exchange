@@ -348,7 +348,7 @@ eventBus.on('text', function(from_address, text){
 	}
 
 	if(langs.indexOf(lc_text) >= 0) {
-		db.query("update set lang=? where device_address=?", [lc_text, from_address],() => {})
+		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {})
 		return
 	}
 
