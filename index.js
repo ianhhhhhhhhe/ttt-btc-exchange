@@ -19,7 +19,7 @@ let url = require('url')
 
 const MIN_CONFIRMATIONS = 2;
 const MIN_SATOSHIS = 100000; // typical fee is 0.0008 BTC = 80000 sat
-const langs = ["中文", "english"]
+const langs = ["中文", "cn", "english", "en"]
 
 var wallet;
 
@@ -327,7 +327,7 @@ eventBus.on('paired', function(from_address){
 		var device = require('trustnote-common/device');
 		updateState(from_address, 'greeting');
 		// device.sendMessageToDevice(from_address, 'text', "Welcome to TTT Trader, the easiest way to buy TTT with Bitcoin. Please click '[BUY](command:BUY)' to proceed\n这里是BTC购买TTT的快捷入口，请点击[BUY](command:BUY)进行购买");
-		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please select your language:\n\n--[English](command:English)\n--[中文](command:中文)\n")
+		device.sendMessageToDevice(from_address, 'text', "Welcome to the transaction service, which provides users with a quick entry to pay BTC to purchase TTT, please select your language:\n\n--[English](command:English)\n（or enter English/english/EN/en）\n--[中文](command:中文)\n（or enter中文/CN/cn）")
 	});
 });
 
@@ -351,6 +351,7 @@ eventBus.on('text', function(from_address, text){
 		db.query("update states set lang=? where device_address=?", [lc_text, from_address],() => {
 			switch(lc_text){
 				case "中文":
+				case "cn":
 					device.sendMessageToDevice(from_address, 'text', '请点击[购买](command:BUY)进行购买');
 					break;
 				default:
@@ -366,6 +367,7 @@ eventBus.on('text', function(from_address, text){
 		getUserLang(from_address, function(lang){
 			switch(lang){
 				case "中文":
+				case "cn":
 					return device.sendMessageToDevice(from_address, 'text', '你好');
 				default:
 					return device.sendMessageToDevice(from_address, 'text', 'hello');
@@ -381,6 +383,7 @@ eventBus.on('text', function(from_address, text){
 			getUserLang(from_address, function(lang){
 				switch(lang){
 					case "中文":
+					case "cn":
 						return device.sendMessageToDevice(from_address, 'text', "输入邀请码或点击[跳过](command:SKIP)继续");
 					default:
 						return device.sendMessageToDevice(from_address, 'text', "Please enter your invitation code or click [SKIP](command:SKIP) to continue.");
@@ -398,6 +401,7 @@ eventBus.on('text', function(from_address, text){
 				getUserLang(from_address, function(lang){
 					switch(lang){
 						case "中文":
+						case "cn":
 							return device.sendMessageToDevice(from_address, 'text', "当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 						default:
 							return device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +"BTC/TTT\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")");
@@ -417,6 +421,7 @@ eventBus.on('text', function(from_address, text){
 				getUserLang(from_address, function(lang){
 					switch(lang){
 						case "中文":
+						case "cn":
 							return device.sendMessageToDevice(from_address, 'text', "当前价格: "+ rates +"BTC/TTT（每十分钟更新）\n\n请发送TTT地址（点击\"…\"按钮，选择插入我的地址）");
 						default:
 							return device.sendMessageToDevice(from_address, 'text', "Current Rate: "+ rates +"BTC/TTT\n\nPlease send TTT address (just click \"…\" botton and select \"Insert my address\")");
@@ -438,6 +443,7 @@ eventBus.on('text', function(from_address, text){
 					getUserLang(from_address, function(lang){
 						switch(lang){
 							case "中文":
+							case "cn":
 								device.sendMessageToDevice(from_address, 'text', "支付BTC到该地址: "+to_bitcoin_address+"\n\nNote注意事项：\n1.按照实际支付的BTC金额兑换TTT；\n2.当前价格仅供参考，实时价格以BTC确认时的价格为准；\n3.每次兑换金额不小于0.001BTC，少于最低限额视为捐献；\n4.该地址只允许支付一次，多次支付将不予返还；");
 								break;
 							default:
@@ -459,6 +465,7 @@ eventBus.on('text', function(from_address, text){
 			getUserLang(from_address, function(lang){
 				switch(lang){
 					case "中文":
+					case "cn":
 						return device.sendMessageToDevice(from_address, 'text', "地址不正确，请重新输入或点击[BUY](command:BUY)进行购买");
 					default:
 						return device.sendMessageToDevice(from_address, 'text', "Address form isn't correct. Re-enter or click [BUY](command:BUY) to try it again");
@@ -470,6 +477,7 @@ eventBus.on('text', function(from_address, text){
 		getUserLang(from_address, function(lang){
 			switch(lang){
 				case "中文":
+				case "cn":
 					return device.sendMessageToDevice(from_address, 'text', "错误信息，请重新输入或点击[BUY](command:BUY)进行购买");
 				default:
 					return device.sendMessageToDevice(from_address, 'text', "The information is not recognizable. Re-enter or click [BUY](command:BUY) to try it again");
